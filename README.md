@@ -1,52 +1,151 @@
-# course-service
+# Course Service
 
+Clean Architecture Go Project by Evrone
 
-
-## Getting started
-
-To make it easy for you to get started with GitLab, here's a list of recommended next steps.
-
-Already a pro? Just edit this README.md and make it your own. Want to make it easy? [Use the template at the bottom](#editing-this-readme)!
-
-## Add your files
-
-- [ ] [Create](https://docs.gitlab.com/ee/user/project/repository/web_editor.html#create-a-file) or [upload](https://docs.gitlab.com/ee/user/project/repository/web_editor.html#upload-a-file) files
-- [ ] [Add files using the command line](https://docs.gitlab.com/ee/gitlab-basics/add-file.html#add-a-file-using-the-command-line) or push an existing Git repository with the following command:
+## Project Structure
 
 ```
-cd existing_repo
-git remote add origin https://gitlab.com/new-e-learning/course-service.git
-git branch -M main
-git push -uf origin main
+course-service/
+├── cmd/                           # Executable applications
+│   └── app/
+│       └── main.go               # Application entry point
+│
+├── internal/                       # Private application code
+│   ├── app/
+│   │   └── app.go                # Application initialization
+│   │
+│   ├── config/
+│   │   └── config.go             # Configuration management
+│   │
+│   ├── entity/                   # Domain entities (business models)
+│   │   └── course.go             # Course domain entity
+│   │
+│   ├── usecase/                  # Business logic / Use cases
+│   │   └── course/
+│   │       ├── get_course.go      # Get course use case
+│   │       ├── list_courses.go    # List courses use case
+│   │       └── interface.go       # Repository interfaces
+│   │
+│   ├── repository/               # Data access layer (adapters)
+│   │   └── course/
+│   │       └── postgres.go        # PostgreSQL implementation
+│   │
+│   ├── delivery/                 # HTTP handlers (controllers)
+│   │   └── http/
+│   │       └── handler/
+│   │           └── course.go      # HTTP handlers for courses
+│   │
+│   └── middleware/               # HTTP middleware
+│       └── middleware.go          # Logger, recovery, etc.
+│
+├── pkg/                           # Shared utilities
+│   ├── logger/                    # Logger package
+│   │   └── logger.go
+│   │
+│   └── server/                    # HTTP server wrapper
+│       └── server.go
+│
+├── migrations/                    # Database migrations
+├── go.mod                         # Go modules file
+└── README.md                      # This file
+
 ```
 
-## Integrate with your tools
+## Architecture Layers
 
-- [ ] [Set up project integrations](https://gitlab.com/new-e-learning/course-service/-/settings/integrations)
+### 1. **Entity Layer** (`internal/entity/`)
+- Contains domain models and business rules
+- Independent from any frameworks or external libraries
 
-## Collaborate with your team
+### 2. **Use Case Layer** (`internal/usecase/`)
+- Contains business logic
+- Implements use cases that orchestrate the flow of data
+- Depends on entities and repository interfaces
 
-- [ ] [Invite team members and collaborators](https://docs.gitlab.com/ee/user/project/members/)
-- [ ] [Create a new merge request](https://docs.gitlab.com/ee/user/project/merge_requests/creating_merge_requests.html)
-- [ ] [Automatically close issues from merge requests](https://docs.gitlab.com/ee/user/project/issues/managing_issues.html#closing-issues-automatically)
-- [ ] [Enable merge request approvals](https://docs.gitlab.com/ee/user/project/merge_requests/approvals/)
-- [ ] [Set auto-merge](https://docs.gitlab.com/ee/user/project/merge_requests/merge_when_pipeline_succeeds.html)
+### 3. **Interface/Adapter Layer** (`internal/repository/` and `internal/delivery/`)
+- **Repository**: Implements data access interfaces
+- **Delivery/Handler**: Implements HTTP handlers for API endpoints
 
-## Test and Deploy
+### 4. **Framework Layer** (`cmd/`)
+- Contains the main application entry point
+- Wires up all dependencies
+- Minimal business logic
 
-Use the built-in continuous integration in GitLab.
+## Key Features
 
-- [ ] [Get started with GitLab CI/CD](https://docs.gitlab.com/ee/ci/quick_start/)
-- [ ] [Analyze your code for known vulnerabilities with Static Application Security Testing (SAST)](https://docs.gitlab.com/ee/user/application_security/sast/)
-- [ ] [Deploy to Kubernetes, Amazon EC2, or Amazon ECS using Auto Deploy](https://docs.gitlab.com/ee/topics/autodevops/requirements.html)
-- [ ] [Use pull-based deployments for improved Kubernetes management](https://docs.gitlab.com/ee/user/clusters/agent/)
-- [ ] [Set up protected environments](https://docs.gitlab.com/ee/ci/environments/protected_environments.html)
+✅ Clean Architecture separation of concerns
+✅ Dependency Inversion Principle
+✅ Testability through interfaces
+✅ Easy to extend and maintain
+✅ Framework/library agnostic
 
-***
+## Getting Started
 
-# Editing this README
+### Prerequisites
+- Go 1.21 or higher
 
-When you're ready to make this README your own, just edit this file and use the handy template below (or feel free to structure it however you want - this is just a starting point!). Thanks to [makeareadme.com](https://www.makeareadme.com/) for this template.
+### Installation
+
+1. Clone the repository:
+```bash
+git clone https://github.com/new-e-learning/course-service.git
+cd courses-service
+```
+
+2. Initialize dependencies:
+```bash
+go mod download
+```
+
+3. Run the application:
+```bash
+go run cmd/app/main.go
+```
+
+## Environment Variables
+
+```
+APP_NAME=course-service
+APP_VERSION=1.0.0
+APP_ENV=development
+SERVER_HOST=localhost
+SERVER_PORT=8080
+DB_HOST=localhost
+DB_PORT=5432
+DB_USER=postgres
+DB_PASSWORD=password
+DB_NAME=course
+```
+
+## API Endpoints
+
+### Courses
+
+- `GET /courses` - List all courses
+- `GET /courses/{id}` - Get course by ID
+- `POST /courses` - Create a new course
+- `PUT /courses/{id}` - Update a course
+- `DELETE /courses/{id}` - Delete a course
+
+## Development
+
+### Adding a New Feature
+
+1. Create domain entity in `internal/entity/`
+2. Define repository interface in `internal/usecase/`
+3. Create use case in `internal/usecase/`
+4. Implement repository in `internal/repository/`
+5. Create HTTP handler in `internal/delivery/http/handler/`
+
+### Testing
+
+```bash
+go test ./...
+```
+
+## License
+
+MIT
 
 ## Suggestions for a good README
 

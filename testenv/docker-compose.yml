@@ -1,0 +1,33 @@
+services:
+  course-service:
+    build:
+      context: ../.
+      dockerfile: Dockerfile
+    container_name: course-service
+    restart: always
+    volumes:
+      - ../.env:/app/.env:ro
+    ports:
+      - "10001:10001"
+    depends_on:
+      - postgres
+
+  postgres:
+    image: postgres:18.3
+    container_name: postgres
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER:-postgres}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-postgres}
+      POSTGRES_DB: ${POSTGRES_DB:-courses}
+    ports:
+      - "${POSTGRES_PORT:-5432}:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-postgres}"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+volumes:
+  postgres_data:
