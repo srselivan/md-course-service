@@ -11,6 +11,8 @@ import (
 	"gorm.io/gorm"
 )
 
+const courseSectionItemTable = "course_section_item"
+
 type PostgresRepo struct {
 	db *gorm.DB
 }
@@ -30,7 +32,7 @@ func (r *PostgresRepo) Create(ctx context.Context, params coursesectionitems.Cre
 		IsPublished: params.IsPublished,
 	}
 
-	result := r.db.WithContext(ctx).Create(&item)
+	result := r.db.WithContext(ctx).Table(courseSectionItemTable).Create(&item)
 
 	if err := result.Error; err != nil {
 		return domain.CourseSectionItem{}, fmt.Errorf("create: %w", err)
@@ -43,7 +45,7 @@ func (r *PostgresRepo) Update(ctx context.Context, params coursesectionitems.Upd
 		ID: params.ID,
 	}
 
-	result := r.db.WithContext(ctx).Model(&item).Updates(
+	result := r.db.WithContext(ctx).Table(courseSectionItemTable).Model(&item).Updates(
 		map[string]interface{}{
 			"section_id":   params.SectionId,
 			"item_type":    params.ItemType,
@@ -64,7 +66,7 @@ func (r *PostgresRepo) Delete(ctx context.Context, id int64) error {
 		ID: id,
 	}
 
-	result := r.db.WithContext(ctx).Delete(&item)
+	result := r.db.WithContext(ctx).Table(courseSectionItemTable).Delete(&item)
 
 	if err := result.Error; err != nil {
 		return fmt.Errorf("delete: %w", err)
@@ -77,7 +79,7 @@ func (r *PostgresRepo) Get(ctx context.Context, id int64) (domain.CourseSectionI
 		ID: id,
 	}
 
-	result := r.db.WithContext(ctx).First(&item)
+	result := r.db.WithContext(ctx).Table(courseSectionItemTable).First(&item)
 
 	if err := result.Error; err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
@@ -91,7 +93,7 @@ func (r *PostgresRepo) Get(ctx context.Context, id int64) (domain.CourseSectionI
 func (r *PostgresRepo) GetList(ctx context.Context, params coursesectionitems.GetListRepoParams) ([]domain.CourseSectionItem, error) {
 	var models []courseSectionItemModel
 
-	result := r.db.WithContext(ctx).Find(&models)
+	result := r.db.WithContext(ctx).Table(courseSectionItemTable).Find(&models)
 	if err := result.Error; err != nil {
 		return nil, fmt.Errorf("get list: %w", err)
 	}

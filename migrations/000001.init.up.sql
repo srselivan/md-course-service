@@ -4,6 +4,7 @@ create table course
     title         varchar(255)             not null,
     description   text,
     owner_user_id bigint                   not null,
+    status        smallint                 not null default 0,
     created_at    timestamp with time zone not null default current_timestamp,
     updated_at    timestamp with time zone not null default current_timestamp
 );
@@ -11,9 +12,10 @@ create table course
 create table course_listener
 (
     course_id bigint not null references course (id) on delete cascade,
-    group_id  bigint not null,
-    unique (course_id, group_id)
+    user_id   bigint not null,
+    primary key (course_id, user_id)
 );
+create index on course_listener (user_id, course_id);
 
 create table course_section
 (
@@ -32,14 +34,6 @@ create table course_section_item
     title        varchar(255) not null,
     sort_order   int     default 0,
     is_published boolean default false
-);
-
-create table lectures
-(
-    item_id              int primary key references course_section_item (id) on delete cascade,
-    content              text,
-    video_url            varchar(255),
-    reading_time_minutes int default 0
 );
 
 create table assignments
@@ -80,7 +74,7 @@ create table bank_question
     id             bigserial primary key,
     bank_id        bigint                   not null references bank (id) on delete cascade,
     question_text  text                     not null,
-    question_type  varchar(50)              not null check (question_type in ('single_choice', 'multiple_choice', 'text')),
+    question_type  smallint                 not null,
     default_points int                               default 1,
     created_at     timestamp with time zone not null default current_timestamp
 );

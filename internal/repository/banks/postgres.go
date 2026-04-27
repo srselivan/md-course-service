@@ -2,12 +2,15 @@ package banks
 
 import (
 	"context"
+	"fmt"
+
 	"course-service/internal/domain"
 	"course-service/internal/services/banks"
-	"fmt"
 
 	"gorm.io/gorm"
 )
+
+const banksTable = "bank"
 
 type PostgresRepo struct {
 	db *gorm.DB
@@ -26,7 +29,7 @@ func (r *PostgresRepo) Create(ctx context.Context, params banks.CreateRepoParams
 		CourseId:    params.CourseId,
 	}
 
-	result := r.db.WithContext(ctx).Create(&bank)
+	result := r.db.WithContext(ctx).Table(banksTable).Create(&bank)
 
 	if err := result.Error; err != nil {
 		return domain.Bank{}, fmt.Errorf("create: %w", err)
@@ -39,7 +42,7 @@ func (r *PostgresRepo) Update(ctx context.Context, params banks.UpdateRepoParams
 		ID: params.ID,
 	}
 
-	result := r.db.WithContext(ctx).Model(&bank).Updates(
+	result := r.db.WithContext(ctx).Table(banksTable).Model(&bank).Updates(
 		map[string]interface{}{
 			"title":       params.Title,
 			"description": params.Description,
@@ -58,7 +61,7 @@ func (r *PostgresRepo) Delete(ctx context.Context, id int64) error {
 		ID: id,
 	}
 
-	result := r.db.WithContext(ctx).Delete(&bank)
+	result := r.db.WithContext(ctx).Table(banksTable).Delete(&bank)
 
 	if err := result.Error; err != nil {
 		return fmt.Errorf("delete: %w", err)
@@ -69,7 +72,7 @@ func (r *PostgresRepo) Delete(ctx context.Context, id int64) error {
 func (r *PostgresRepo) GetList(ctx context.Context, params banks.GetListRepoParams) ([]domain.Bank, error) {
 	var models []bankModel
 
-	query := r.db.WithContext(ctx)
+	query := r.db.WithContext(ctx).Table(banksTable)
 	if params.CourseId != nil {
 		query = query.Where("course_id = ?", *params.CourseId)
 	}

@@ -2,6 +2,7 @@ package http
 
 import (
 	"context"
+
 	"course-service/internal/domain"
 	"course-service/internal/services/assignments"
 	"course-service/internal/services/bankquestions"
@@ -23,6 +24,13 @@ type coursesService interface {
 	Delete(ctx context.Context, id int64) error
 	Get(ctx context.Context, id int64) (domain.Course, error)
 	GetList(ctx context.Context, params courses.GetListServiceParams) ([]domain.Course, error)
+	GetWithAllItems(ctx context.Context, params courses.GetWithAllItemsParams) (domain.CourseWithItems, error)
+}
+
+type courseListenersService interface {
+	SetListener(ctx context.Context, params courses.SetListenerServiceParams) error
+	GetListenersList(ctx context.Context, params courses.GetListenersListServiceParams) ([]int64, error)
+	DeleteListener(ctx context.Context, params courses.DeleteListenerServiceParams) error
 }
 
 type courseSectionsService interface {
@@ -67,13 +75,15 @@ type banksService interface {
 type bankQuestionsService interface {
 	Create(ctx context.Context, params bankquestions.CreateServiceParams) (domain.BankQuestion, error)
 	Update(ctx context.Context, params bankquestions.UpdateServiceParams) (domain.BankQuestion, error)
-	Delete(ctx context.Context, id int64) error
+	BulkCreate(ctx context.Context, params bankquestions.BulkCreateServiceParams) error
+	BulkUpdate(ctx context.Context, params bankquestions.BulkUpdateServiceParams) error
 	GetList(ctx context.Context, params bankquestions.GetListServiceParams) ([]domain.BankQuestion, error)
 }
 
 type Config struct {
 	Addr                      string
 	CoursesService            coursesService
+	CourseListenersService    courseListenersService
 	CourseSectionsService     courseSectionsService
 	CourseSectionItemsService courseSectionItemsService
 	LecturesService           lecturesService
@@ -87,6 +97,7 @@ type Server struct {
 	addr string
 
 	coursesService            coursesService
+	courseListenersService    courseListenersService
 	courseSectionsService     courseSectionsService
 	courseSectionItemsService courseSectionItemsService
 	lecturesService           lecturesService
@@ -102,6 +113,7 @@ func NewServer(config Config) *Server {
 		app:                       fiber.New(),
 		addr:                      config.Addr,
 		coursesService:            config.CoursesService,
+		courseListenersService:    config.CourseListenersService,
 		courseSectionsService:     config.CourseSectionsService,
 		courseSectionItemsService: config.CourseSectionItemsService,
 		lecturesService:           config.LecturesService,
@@ -134,6 +146,7 @@ func (s *Server) init() {
 	v1Group := apiGroup.Group("/v1")
 	v1Handler := v1.NewHandler(v1.Config{
 		CoursesService:            s.coursesService,
+		CourseListenersService:    s.courseListenersService,
 		CourseSectionsService:     s.courseSectionsService,
 		CourseSectionItemsService: s.courseSectionItemsService,
 		LecturesService:           s.lecturesService,
@@ -145,5 +158,9 @@ func (s *Server) init() {
 
 	{
 		v1Handler.NewCoursesRoutes(v1Group)
+		v1Handler.NewCourseSectionsRoutes(v1Group)
+		v1Handler.NewCourseSectionItemsRoutes(v1Group)
+		v1Handler.NewBanksRoutes(v1Group)
+		v1Handler.NewBankQuestionsRoutes(v1Group)
 	}
 }

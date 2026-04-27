@@ -2,16 +2,20 @@ package bankquestions
 
 import (
 	"context"
-	"course-service/internal/domain"
 	"fmt"
+
+	"github.com/samber/lo"
+
+	"course-service/internal/domain"
 
 	"github.com/rs/zerolog"
 )
 
 type bankQuestionsRepo interface {
 	Create(ctx context.Context, params CreateRepoParams) (domain.BankQuestion, error)
+	BulkCreate(ctx context.Context, params BulkCreateRepoParams) error
 	Update(ctx context.Context, params UpdateRepoParams) (domain.BankQuestion, error)
-	Delete(ctx context.Context, id int64) error
+	BulkUpdate(ctx context.Context, params BulkUpdateRepoParams) error
 	GetList(ctx context.Context, params GetListRepoParams) ([]domain.BankQuestion, error)
 }
 
@@ -41,6 +45,23 @@ func (s *Service) Create(ctx context.Context, params CreateServiceParams) (domai
 	return question, nil
 }
 
+func (s *Service) BulkCreate(ctx context.Context, params BulkCreateServiceParams) error {
+	if err := s.repo.BulkCreate(ctx, BulkCreateRepoParams{
+		Questions: lo.Map(params.Questions, func(item CreateServiceParams, _ int) CreateRepoParams {
+			return CreateRepoParams{
+				QuestionText:  item.QuestionText,
+				QuestionType:  item.QuestionType,
+				DefaultPoints: item.DefaultPoints,
+				BankId:        item.BankId,
+				Answers:       item.Answers,
+			}
+		}),
+	}); err != nil {
+		return fmt.Errorf("repo.BulkCreate: %w", err)
+	}
+	return nil
+}
+
 func (s *Service) Update(ctx context.Context, params UpdateServiceParams) (domain.BankQuestion, error) {
 	question, err := s.repo.Update(ctx, UpdateRepoParams{
 		ID:            params.ID,
@@ -56,9 +77,20 @@ func (s *Service) Update(ctx context.Context, params UpdateServiceParams) (domai
 	return question, nil
 }
 
-func (s *Service) Delete(ctx context.Context, id int64) error {
-	if err := s.repo.Delete(ctx, id); err != nil {
-		return fmt.Errorf("repo.Delete: %w", err)
+func (s *Service) BulkUpdate(ctx context.Context, params BulkUpdateServiceParams) error {
+	if err := s.repo.BulkUpdate(ctx, BulkUpdateRepoParams{
+		Id: params.Id,
+		Questions: lo.Map(params.Questions, func(item UpdateServiceParams, _ int) UpdateRepoParams {
+			return UpdateRepoParams{
+				QuestionText:  item.QuestionText,
+				QuestionType:  item.QuestionType,
+				DefaultPoints: item.DefaultPoints,
+				BankId:        item.BankId,
+				Answers:       item.Answers,
+			}
+		}),
+	}); err != nil {
+		return fmt.Errorf("repo.BulkUpdate: %w", err)
 	}
 	return nil
 }

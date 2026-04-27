@@ -1,11 +1,12 @@
 package v1
 
 import (
+	"encoding/json"
+	"net/http"
+
 	"course-service/internal/services/courses"
 	"course-service/internal/transport/http/utils"
 	"course-service/internal/transport/http/v1/request"
-	"encoding/json"
-	"net/http"
 
 	"github.com/gofiber/fiber/v3"
 )
@@ -17,7 +18,12 @@ func (h *Handler) NewCoursesRoutes(router fiber.Router) {
 	coursesGroup.Put("/:id", h.updateCourse)
 	coursesGroup.Delete("/:id", h.deleteCourse)
 	coursesGroup.Get("/:id", h.getCourse)
-	coursesGroup.Get("/", h.getCoursesList)
+
+	coursesGroup.Post("/:course_id/listeners", h.setCourseListeners)
+	coursesGroup.Delete("/:course_id/listeners", h.deleteCourseListeners)
+	coursesGroup.Get("/:course_id/listeners", h.getCourseListenersList)
+
+	coursesGroup.Get("/:course_id/with-all-items", h.getCourseWithAllItems)
 }
 
 func (h *Handler) createCourse(ctx fiber.Ctx) error {
@@ -63,6 +69,7 @@ func (h *Handler) updateCourse(ctx fiber.Ctx) error {
 		Title:       req.Title,
 		Description: req.Description,
 		OwnerUserId: req.OwnerUserId,
+		Status:      req.Status,
 	})
 	if err != nil {
 		return fiber.NewError(fiber.StatusInternalServerError, err.Error())
@@ -121,12 +128,157 @@ func (h *Handler) getCourse(ctx fiber.Ctx) error {
 }
 
 func (h *Handler) getCoursesList(ctx fiber.Ctx) error {
-	coursesList, err := h.coursesService.GetList(ctx.Context(), courses.GetListServiceParams{})
+	status, err := utils.GetInt64pQuery(ctx, "status")
+	if err != nil {
+		return fiber.NewError(fiber.StatusBadRequest, err.Error())
+	}
+
+	// TODO: Необходимо тянуть из JWT
+	userId, err := utils.GetInt64pQuery(ctx, "userId")
+	if err != nil {
+		return fiber.NewError(fiber.StatusBadRequest, err.Error())
+	}
+	isOwner, err := utils.GetInt64pQuery(ctx, "owner")
+	if err != nil {
+		return fiber.NewError(fiber.StatusBadRequest, err.Error())
+	}
+
+	params := courses.GetListServiceParams{
+		Status: utils.Int64pToInt16p(status),
+	}
+	if isOwner != nil {
+		params.OwnerUserId = userId
+	} else {
+		params.UserID = userId
+	}
+
+	coursesList, err := h.coursesService.GetList(ctx.Context(), params)
 	if err != nil {
 		return fiber.NewError(fiber.StatusInternalServerError, err.Error())
 	}
 
 	bytes, err := json.Marshal(coursesList)
+	if err != nil {
+		return fiber.NewError(fiber.StatusInternalServerError, err.Error())
+	}
+
+	if err = ctx.Status(http.StatusOK).Send(bytes); err != nil {
+		return fiber.NewError(fiber.StatusInternalServerError, err.Error())
+	}
+
+	return nil
+}
+
+func (h *Handler) getCourseListenersList(ctx fiber.Ctx) error {
+	courseID, err := utils.GetInt64Param(ctx, "course_id")
+	if err != nil {
+		return fiber.NewError(fiber.StatusBadRequest, err.Error())
+	}
+
+	listenersList, err := h.courseListenersService.GetListenersList(
+		ctx.Context(),
+		courses.GetListenersListServiceParams{CourseId: courseID},
+	)
+	if err != nil {
+		return fiber.NewError(fiber.StatusInternalServerError, err.Error())
+	}
+
+	bytes, err := json.Marshal(listenersList)
+	if err != nil {
+		return fiber.NewError(fiber.StatusInternalServerError, err.Error())
+	}
+
+	if err = ctx.Status(http.StatusOK).Send(bytes); err != nil {
+		return fiber.NewError(fiber.StatusInternalServerError, err.Error())
+	}
+
+	return nil
+}
+
+func (h *Handler) deleteCourseListeners(ctx fiber.Ctx) error {
+	courseID, err := utils.GetInt64Param(ctx, "course_id")
+	if err != nil {
+		return fiber.NewError(fiber.StatusBadRequest, err.Error())
+	}
+
+	var req request.DeleteCourseListeners
+	if err = json.Unmarshal(ctx.Body(), &req); err != nil {
+		return fiber.NewError(fiber.StatusBadRequest, err.Error())
+	}
+
+	if err = h.courseListenersService.DeleteListener(
+		ctx.Context(),
+		courses.DeleteListenerServiceParams{
+			CourseId: courseID,
+			UserIds:  req.UserIds,
+			GroupIds: req.GroupIds,
+		},
+	); err != nil {
+		return fiber.NewError(fiber.StatusInternalServerError, err.Error())
+	}
+
+	if err = ctx.Status(http.StatusOK).Send(nil); err != nil {
+		return fiber.NewError(fiber.StatusInternalServerError, err.Error())
+	}
+
+	return nil
+}
+
+func (h *Handler) setCourseListeners(ctx fiber.Ctx) error {
+	courseID, err := utils.GetInt64Param(ctx, "course_id")
+	if err != nil {
+		return fiber.NewError(fiber.StatusBadRequest, err.Error())
+	}
+
+	var req request.SetCourseListener
+	if err = json.Unmarshal(ctx.Body(), &req); err != nil {
+		return fiber.NewError(fiber.StatusBadRequest, err.Error())
+	}
+
+	if err = h.courseListenersService.SetListener(
+		ctx.Context(),
+		courses.SetListenerServiceParams{
+			CourseId: courseID,
+			GroupIds: req.GroupIds,
+			UserIds:  req.UserIds,
+		},
+	); err != nil {
+		return fiber.NewError(fiber.StatusInternalServerError, err.Error())
+	}
+
+	if err = ctx.Status(http.StatusOK).Send(nil); err != nil {
+		return fiber.NewError(fiber.StatusInternalServerError, err.Error())
+	}
+
+	return nil
+}
+
+func (h *Handler) getCourseWithAllItems(ctx fiber.Ctx) error {
+	courseID, err := utils.GetInt64Param(ctx, "course_id")
+	if err != nil {
+		return fiber.NewError(fiber.StatusBadRequest, err.Error())
+	}
+
+	limit, err := utils.GetInt64Query(ctx, "limit")
+	if err != nil {
+		return fiber.NewError(fiber.StatusBadRequest, err.Error())
+	}
+
+	offset, err := utils.GetInt64Query(ctx, "offset")
+	if err != nil {
+		return fiber.NewError(fiber.StatusBadRequest, err.Error())
+	}
+
+	courseWithItems, err := h.coursesService.GetWithAllItems(ctx, courses.GetWithAllItemsParams{
+		Id:     courseID,
+		Limit:  limit,
+		Offset: offset,
+	})
+	if err != nil {
+		return fiber.NewError(fiber.StatusInternalServerError, err.Error())
+	}
+
+	bytes, err := json.Marshal(courseWithItems)
 	if err != nil {
 		return fiber.NewError(fiber.StatusInternalServerError, err.Error())
 	}

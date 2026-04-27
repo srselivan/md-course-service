@@ -2,11 +2,17 @@ package bankquestions
 
 import (
 	"context"
-	"course-service/internal/domain"
-	"course-service/internal/services/bankquestions"
 	"fmt"
 
+	"course-service/internal/domain"
+	"course-service/internal/services/bankquestions"
+
 	"gorm.io/gorm"
+)
+
+const (
+	bankQuestionsTable = "bank_question"
+	bankAnswersTable   = "bank_answers"
 )
 
 type PostgresRepo struct {
@@ -20,108 +26,94 @@ func NewPostgresRepo(db *gorm.DB) *PostgresRepo {
 }
 
 func (r *PostgresRepo) Create(ctx context.Context, params bankquestions.CreateRepoParams) (domain.BankQuestion, error) {
-	var questionModel bankQuestionModel
+	panic("implement me")
+}
+
+func (r *PostgresRepo) BulkCreate(ctx context.Context, params bankquestions.BulkCreateRepoParams) error {
+	var questionsDB []bankQuestionModel
+	for _, question := range params.Questions {
+		questionsDB = append(questionsDB, bankQuestionModel{
+			BankId:        question.BankId,
+			QuestionText:  question.QuestionText,
+			QuestionType:  int16(question.QuestionType),
+			DefaultPoints: question.DefaultPoints,
+		})
+	}
+
 	err := r.db.WithContext(ctx).Transaction(func(tx *gorm.DB) error {
-		questionModel = bankQuestionModel{
-			BankId:        params.BankId,
-			QuestionText:  params.QuestionText,
-			QuestionType:  params.QuestionType,
-			DefaultPoints: params.DefaultPoints,
+		if err := tx.Table(bankQuestionsTable).Create(&questionsDB).Error; err != nil {
+			return fmt.Errorf("bulk insert %s: %w", bankQuestionsTable, err)
 		}
 
-		if err := tx.Create(&questionModel).Error; err != nil {
-			return fmt.Errorf("create question: %w", err)
+		var answersDB []bankAnswerModel
+		for i, question := range params.Questions {
+			for _, answer := range question.Answers {
+				answersDB = append(answersDB, bankAnswerModel{
+					QuestionId: questionsDB[i].ID,
+					AnswerText: answer.AnswerText,
+					IsCorrect:  answer.IsCorrect,
+				})
+			}
 		}
 
-		if len(params.Answers) == 0 {
-			return nil
-		}
-
-		answerModels := make([]bankAnswerModel, 0, len(params.Answers))
-		for _, a := range params.Answers {
-			answerModels = append(answerModels, bankAnswerModel{
-				QuestionId: questionModel.ID,
-				AnswerText: a.AnswerText,
-				IsCorrect:  a.IsCorrect,
-			})
-		}
-
-		if err := tx.Create(&answerModels).Error; err != nil {
-			return fmt.Errorf("create answers: %w", err)
+		if err := tx.Table(bankAnswersTable).Create(&answersDB).Error; err != nil {
+			return fmt.Errorf("bulk insert %s: %w", bankAnswersTable, err)
 		}
 
 		return nil
 	})
 	if err != nil {
-		return domain.BankQuestion{}, err
+		return fmt.Errorf("transaction: %w", err)
 	}
 
-	var answerModels []bankAnswerModel
-	if err := r.db.WithContext(ctx).Where("question_id = ?", questionModel.ID).Find(&answerModels).Error; err != nil {
-		return domain.BankQuestion{}, fmt.Errorf("load answers after create: %w", err)
-	}
-
-	return questionModel.toDomain(answerModels), nil
+	return nil
 }
 
 func (r *PostgresRepo) Update(ctx context.Context, params bankquestions.UpdateRepoParams) (domain.BankQuestion, error) {
-	questionModel := bankQuestionModel{
-		ID: params.ID,
+	panic("implement me")
+}
+
+func (r *PostgresRepo) BulkUpdate(ctx context.Context, params bankquestions.BulkUpdateRepoParams) error {
+	var questionsDB []bankQuestionModel
+	for _, question := range params.Questions {
+		questionsDB = append(questionsDB, bankQuestionModel{
+			BankId:        question.BankId,
+			QuestionText:  question.QuestionText,
+			QuestionType:  int16(question.QuestionType),
+			DefaultPoints: question.DefaultPoints,
+		})
 	}
 
 	err := r.db.WithContext(ctx).Transaction(func(tx *gorm.DB) error {
-		if err := tx.Model(&questionModel).Updates(map[string]interface{}{
-			"bank_id":        params.BankId,
-			"question_text":  params.QuestionText,
-			"question_type":  params.QuestionType,
-			"default_points": params.DefaultPoints,
-		}).Error; err != nil {
-			return fmt.Errorf("update question: %w", err)
+		if err := tx.Table(bankQuestionsTable).Where("bank_id = ?", params.Id).Delete(&bankQuestionModel{}).Error; err != nil {
+			return fmt.Errorf("bulk delete %s: %w", bankQuestionsTable, err)
 		}
 
-		if err := tx.Where("question_id = ?", params.ID).Delete(&bankAnswerModel{}).Error; err != nil {
-			return fmt.Errorf("delete old answers: %w", err)
+		if err := tx.Table(bankQuestionsTable).Create(&questionsDB).Error; err != nil {
+			return fmt.Errorf("bulk insert %s: %w", bankQuestionsTable, err)
 		}
 
-		if len(params.Answers) == 0 {
-			return nil
+		var answersDB []bankAnswerModel
+		for i, question := range params.Questions {
+			for _, answer := range question.Answers {
+				answersDB = append(answersDB, bankAnswerModel{
+					QuestionId: questionsDB[i].ID,
+					AnswerText: answer.AnswerText,
+					IsCorrect:  answer.IsCorrect,
+				})
+			}
 		}
 
-		answerModels := make([]bankAnswerModel, 0, len(params.Answers))
-		for _, a := range params.Answers {
-			answerModels = append(answerModels, bankAnswerModel{
-				QuestionId: params.ID,
-				AnswerText: a.AnswerText,
-				IsCorrect:  a.IsCorrect,
-			})
-		}
-
-		if err := tx.Create(&answerModels).Error; err != nil {
-			return fmt.Errorf("create answers: %w", err)
+		if err := tx.Table(bankAnswersTable).Create(&answersDB).Error; err != nil {
+			return fmt.Errorf("bulk insert %s: %w", bankAnswersTable, err)
 		}
 
 		return nil
 	})
 	if err != nil {
-		return domain.BankQuestion{}, err
+		return fmt.Errorf("transaction: %w", err)
 	}
 
-	var answerModels []bankAnswerModel
-	if err := r.db.WithContext(ctx).Where("question_id = ?", params.ID).Find(&answerModels).Error; err != nil {
-		return domain.BankQuestion{}, fmt.Errorf("load answers after update: %w", err)
-	}
-
-	return questionModel.toDomain(answerModels), nil
-}
-
-func (r *PostgresRepo) Delete(ctx context.Context, id int64) error {
-	question := bankQuestionModel{
-		ID: id,
-	}
-
-	if err := r.db.WithContext(ctx).Delete(&question).Error; err != nil {
-		return fmt.Errorf("delete question: %w", err)
-	}
 	return nil
 }
 

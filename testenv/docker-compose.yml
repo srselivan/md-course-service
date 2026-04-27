@@ -6,7 +6,7 @@ services:
     container_name: course-service
     restart: always
     volumes:
-      - ../.env:/app/.env:ro
+      - .env:/app/.env:ro
     ports:
       - "10001:10001"
     depends_on:
