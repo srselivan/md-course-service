@@ -10,7 +10,7 @@ import (
 	"course-service/internal/services/courses"
 	"course-service/internal/services/coursesectionitems"
 	"course-service/internal/services/coursesections"
-	"course-service/internal/services/lectures"
+	testsservice "course-service/internal/services/tests"
 	v1 "course-service/internal/transport/http/v1"
 
 	"github.com/gofiber/fiber/v3"
@@ -49,14 +49,6 @@ type courseSectionItemsService interface {
 	GetList(ctx context.Context, params coursesectionitems.GetListServiceParams) ([]domain.CourseSectionItem, error)
 }
 
-type lecturesService interface {
-	Create(ctx context.Context, params lectures.CreateServiceParams) (domain.Lecture, error)
-	Update(ctx context.Context, params lectures.UpdateServiceParams) (domain.Lecture, error)
-	Delete(ctx context.Context, itemId int64) error
-	Get(ctx context.Context, itemId int64) (domain.Lecture, error)
-	GetList(ctx context.Context, params lectures.GetListServiceParams) ([]domain.Lecture, error)
-}
-
 type assignmentsService interface {
 	Create(ctx context.Context, params assignments.CreateServiceParams) (domain.Assignment, error)
 	Update(ctx context.Context, params assignments.UpdateServiceParams) (domain.Assignment, error)
@@ -80,18 +72,41 @@ type bankQuestionsService interface {
 	GetList(ctx context.Context, params bankquestions.GetListServiceParams) ([]domain.BankQuestion, error)
 }
 
+type testsService interface {
+	Create(ctx context.Context, params testsservice.CreateServiceParams) (domain.Test, error)
+	Update(ctx context.Context, params testsservice.UpdateServiceParams) (domain.Test, error)
+	Delete(ctx context.Context, id int64) error
+	GetList(ctx context.Context, courseID *int64) ([]domain.Test, error)
+	GetInfo(ctx context.Context, testID, userID int64) (domain.TestWithAttempts, error)
+	GetAttempts(ctx context.Context, params testsservice.GetAttemptsServiceParams) ([]domain.TestAttempt, error)
+	StartAttempt(ctx context.Context, params testsservice.StartAttemptServiceParams) (domain.AttemptState, error)
+	GetAttemptState(ctx context.Context, params testsservice.GetAttemptStateServiceParams) (domain.AttemptState, error)
+	SaveAnswer(ctx context.Context, params testsservice.SaveAnswerServiceParams) error
+	SubmitAttempt(ctx context.Context, attemptID int64) (domain.TestAttempt, error)
+	GradeAttempt(ctx context.Context, params testsservice.GradeAttemptServiceParams) (domain.TestAttempt, error)
+}
+
 type Config struct {
 	Addr                      string
 	CoursesService            coursesService
 	CourseListenersService    courseListenersService
 	CourseSectionsService     courseSectionsService
 	CourseSectionItemsService courseSectionItemsService
-	LecturesService           lecturesService
 	AssignmentsService        assignmentsService
 	BanksService              banksService
 	BankQuestionsService      bankQuestionsService
+	TestsService              testsService
 	Logger                    *zerolog.Logger
 }
+
+//	@title			Course Service API
+//	@version		1.0
+//	@description	REST API for courses, sections, assignments, question banks and tests.
+//	@description	Tests are also available under `/api` (same handlers as `/cs/v1`).
+//	@host			localhost:8080
+//	@BasePath		/cs/v1
+//	@schemes		http
+
 type Server struct {
 	app  *fiber.App
 	addr string
@@ -100,10 +115,10 @@ type Server struct {
 	courseListenersService    courseListenersService
 	courseSectionsService     courseSectionsService
 	courseSectionItemsService courseSectionItemsService
-	lecturesService           lecturesService
 	assignmentsService        assignmentsService
 	banksService              banksService
 	bankQuestionsService      bankQuestionsService
+	testsService              testsService
 
 	logger *zerolog.Logger
 }
@@ -116,10 +131,10 @@ func NewServer(config Config) *Server {
 		courseListenersService:    config.CourseListenersService,
 		courseSectionsService:     config.CourseSectionsService,
 		courseSectionItemsService: config.CourseSectionItemsService,
-		lecturesService:           config.LecturesService,
 		assignmentsService:        config.AssignmentsService,
 		banksService:              config.BanksService,
 		bankQuestionsService:      config.BankQuestionsService,
+		testsService:              config.TestsService,
 		logger:                    config.Logger,
 	}
 
@@ -140,6 +155,8 @@ func (s *Server) Shutdown() error {
 }
 
 func (s *Server) init() {
+	registerSwagger(s.app)
+
 	apiGroup := s.app.Group("/cs")
 	apiGroup.Use(logger.New())
 
@@ -149,10 +166,10 @@ func (s *Server) init() {
 		CourseListenersService:    s.courseListenersService,
 		CourseSectionsService:     s.courseSectionsService,
 		CourseSectionItemsService: s.courseSectionItemsService,
-		LecturesService:           s.lecturesService,
 		AssignmentsService:        s.assignmentsService,
 		BanksService:              s.banksService,
 		BankQuestionsService:      s.bankQuestionsService,
+		TestsService:              s.testsService,
 		Logger:                    s.logger,
 	})
 
@@ -160,7 +177,12 @@ func (s *Server) init() {
 		v1Handler.NewCoursesRoutes(v1Group)
 		v1Handler.NewCourseSectionsRoutes(v1Group)
 		v1Handler.NewCourseSectionItemsRoutes(v1Group)
+		v1Handler.NewAssignmentsRoutes(v1Group)
 		v1Handler.NewBanksRoutes(v1Group)
 		v1Handler.NewBankQuestionsRoutes(v1Group)
+		v1Handler.NewTestsRoutes(v1Group)
 	}
+
+	apiCompatGroup := s.app.Group("/api")
+	v1Handler.NewTestsRoutes(apiCompatGroup)
 }

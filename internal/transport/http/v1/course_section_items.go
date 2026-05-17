@@ -1,11 +1,14 @@
 package v1
 
 import (
+	"encoding/json"
+	"net/http"
+
 	"course-service/internal/services/coursesectionitems"
 	"course-service/internal/transport/http/utils"
 	"course-service/internal/transport/http/v1/request"
-	"encoding/json"
-	"net/http"
+
+	_ "course-service/internal/domain"
 
 	"github.com/gofiber/fiber/v3"
 )
@@ -20,6 +23,17 @@ func (h *Handler) NewCourseSectionItemsRoutes(router fiber.Router) {
 	itemsGroup.Get("/", h.getCourseSectionItemsList)
 }
 
+// createCourseSectionItem godoc
+//
+//	@Summary	Create section item
+//	@Tags		course-section-items
+//	@Accept		json
+//	@Produce	json
+//	@Param		body	body		request.CreateCourseSectionItem	true	"Item"
+//	@Success	201		{object}	domain.CourseSectionItem
+//	@Failure	400		{object}	ErrorResponse
+//	@Failure	500		{object}	ErrorResponse
+//	@Router		/course-section-items [post]
 func (h *Handler) createCourseSectionItem(ctx fiber.Ctx) error {
 	var req request.CreateCourseSectionItem
 	if err := json.Unmarshal(ctx.Body(), &req); err != nil {
@@ -49,6 +63,18 @@ func (h *Handler) createCourseSectionItem(ctx fiber.Ctx) error {
 	return nil
 }
 
+// updateCourseSectionItem godoc
+//
+//	@Summary	Update section item
+//	@Tags		course-section-items
+//	@Accept		json
+//	@Produce	json
+//	@Param		id		path		int								true	"Item ID"
+//	@Param		body	body		request.UpdateCourseSectionItem	true	"Item"
+//	@Success	200		{object}	domain.CourseSectionItem
+//	@Failure	400		{object}	ErrorResponse
+//	@Failure	500		{object}	ErrorResponse
+//	@Router		/course-section-items/{id} [put]
 func (h *Handler) updateCourseSectionItem(ctx fiber.Ctx) error {
 	id, err := utils.GetInt64Param(ctx, "id")
 	if err != nil {
@@ -84,6 +110,15 @@ func (h *Handler) updateCourseSectionItem(ctx fiber.Ctx) error {
 	return nil
 }
 
+// deleteCourseSectionItem godoc
+//
+//	@Summary	Delete section item
+//	@Tags		course-section-items
+//	@Param		id	path	int	true	"Item ID"
+//	@Success	200
+//	@Failure	400	{object}	ErrorResponse
+//	@Failure	500	{object}	ErrorResponse
+//	@Router		/course-section-items/{id} [delete]
 func (h *Handler) deleteCourseSectionItem(ctx fiber.Ctx) error {
 	id, err := utils.GetInt64Param(ctx, "id")
 	if err != nil {
@@ -101,6 +136,16 @@ func (h *Handler) deleteCourseSectionItem(ctx fiber.Ctx) error {
 	return nil
 }
 
+// getCourseSectionItem godoc
+//
+//	@Summary	Get section item
+//	@Tags		course-section-items
+//	@Produce	json
+//	@Param		id	path		int	true	"Item ID"
+//	@Success	200	{object}	domain.CourseSectionItem
+//	@Failure	400	{object}	ErrorResponse
+//	@Failure	500	{object}	ErrorResponse
+//	@Router		/course-section-items/{id} [get]
 func (h *Handler) getCourseSectionItem(ctx fiber.Ctx) error {
 	id, err := utils.GetInt64Param(ctx, "id")
 	if err != nil {
@@ -124,6 +169,14 @@ func (h *Handler) getCourseSectionItem(ctx fiber.Ctx) error {
 	return nil
 }
 
+// getCourseSectionItemsList godoc
+//
+//	@Summary	List section items
+//	@Tags		course-section-items
+//	@Produce	json
+//	@Success	200	{array}		domain.CourseSectionItem
+//	@Failure	500	{object}	ErrorResponse
+//	@Router		/course-section-items [get]
 func (h *Handler) getCourseSectionItemsList(ctx fiber.Ctx) error {
 	items, err := h.courseSectionItemsService.GetList(ctx.Context(), coursesectionitems.GetListServiceParams{})
 	if err != nil {

@@ -2,9 +2,10 @@ package logger
 
 import (
 	"fmt"
-	"github.com/rs/zerolog"
 	"os"
 	"time"
+
+	"github.com/rs/zerolog"
 )
 
 type Config struct {

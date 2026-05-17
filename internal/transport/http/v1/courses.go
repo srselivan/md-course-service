@@ -8,6 +8,8 @@ import (
 	"course-service/internal/transport/http/utils"
 	"course-service/internal/transport/http/v1/request"
 
+	_ "course-service/internal/domain"
+
 	"github.com/gofiber/fiber/v3"
 )
 
@@ -26,6 +28,17 @@ func (h *Handler) NewCoursesRoutes(router fiber.Router) {
 	coursesGroup.Get("/:course_id/with-all-items", h.getCourseWithAllItems)
 }
 
+// createCourse godoc
+//
+//	@Summary	Create course
+//	@Tags		courses
+//	@Accept		json
+//	@Produce	json
+//	@Param		body	body		request.CreateCourse	true	"Course"
+//	@Success	201		{object}	domain.Course
+//	@Failure	400		{object}	ErrorResponse
+//	@Failure	500		{object}	ErrorResponse
+//	@Router		/courses [post]
 func (h *Handler) createCourse(ctx fiber.Ctx) error {
 	var req request.CreateCourse
 	if err := json.Unmarshal(ctx.Body(), &req); err != nil {
@@ -53,6 +66,18 @@ func (h *Handler) createCourse(ctx fiber.Ctx) error {
 	return nil
 }
 
+// updateCourse godoc
+//
+//	@Summary	Update course
+//	@Tags		courses
+//	@Accept		json
+//	@Produce	json
+//	@Param		id		path		int						true	"Course ID"
+//	@Param		body	body		request.UpdateCourse	true	"Course"
+//	@Success	200		{object}	domain.Course
+//	@Failure	400		{object}	ErrorResponse
+//	@Failure	500		{object}	ErrorResponse
+//	@Router		/courses/{id} [put]
 func (h *Handler) updateCourse(ctx fiber.Ctx) error {
 	id, err := utils.GetInt64Param(ctx, "id")
 	if err != nil {
@@ -87,6 +112,15 @@ func (h *Handler) updateCourse(ctx fiber.Ctx) error {
 	return nil
 }
 
+// deleteCourse godoc
+//
+//	@Summary	Delete course
+//	@Tags		courses
+//	@Param		id	path	int	true	"Course ID"
+//	@Success	200
+//	@Failure	400	{object}	ErrorResponse
+//	@Failure	500	{object}	ErrorResponse
+//	@Router		/courses/{id} [delete]
 func (h *Handler) deleteCourse(ctx fiber.Ctx) error {
 	id, err := utils.GetInt64Param(ctx, "id")
 	if err != nil {
@@ -104,6 +138,16 @@ func (h *Handler) deleteCourse(ctx fiber.Ctx) error {
 	return nil
 }
 
+// getCourse godoc
+//
+//	@Summary	Get course by ID
+//	@Tags		courses
+//	@Produce	json
+//	@Param		id	path		int	true	"Course ID"
+//	@Success	200	{object}	domain.Course
+//	@Failure	400	{object}	ErrorResponse
+//	@Failure	500	{object}	ErrorResponse
+//	@Router		/courses/{id} [get]
 func (h *Handler) getCourse(ctx fiber.Ctx) error {
 	id, err := utils.GetInt64Param(ctx, "id")
 	if err != nil {
@@ -169,6 +213,16 @@ func (h *Handler) getCoursesList(ctx fiber.Ctx) error {
 	return nil
 }
 
+// getCourseListenersList godoc
+//
+//	@Summary	List course listeners
+//	@Tags		courses
+//	@Produce	json
+//	@Param		course_id	path		int	true	"Course ID"
+//	@Success	200			{array}		int64
+//	@Failure	400			{object}	ErrorResponse
+//	@Failure	500			{object}	ErrorResponse
+//	@Router		/courses/{course_id}/listeners [get]
 func (h *Handler) getCourseListenersList(ctx fiber.Ctx) error {
 	courseID, err := utils.GetInt64Param(ctx, "course_id")
 	if err != nil {
@@ -195,6 +249,17 @@ func (h *Handler) getCourseListenersList(ctx fiber.Ctx) error {
 	return nil
 }
 
+// deleteCourseListeners godoc
+//
+//	@Summary	Remove course listeners
+//	@Tags		courses
+//	@Accept		json
+//	@Param		course_id	path	int								true	"Course ID"
+//	@Param		body		body	request.DeleteCourseListeners	true	"Listeners"
+//	@Success	200
+//	@Failure	400	{object}	ErrorResponse
+//	@Failure	500	{object}	ErrorResponse
+//	@Router		/courses/{course_id}/listeners [delete]
 func (h *Handler) deleteCourseListeners(ctx fiber.Ctx) error {
 	courseID, err := utils.GetInt64Param(ctx, "course_id")
 	if err != nil {
@@ -224,6 +289,17 @@ func (h *Handler) deleteCourseListeners(ctx fiber.Ctx) error {
 	return nil
 }
 
+// setCourseListeners godoc
+//
+//	@Summary	Add course listeners
+//	@Tags		courses
+//	@Accept		json
+//	@Param		course_id	path	int							true	"Course ID"
+//	@Param		body		body	request.SetCourseListener	true	"Listeners"
+//	@Success	200
+//	@Failure	400	{object}	ErrorResponse
+//	@Failure	500	{object}	ErrorResponse
+//	@Router		/courses/{course_id}/listeners [post]
 func (h *Handler) setCourseListeners(ctx fiber.Ctx) error {
 	courseID, err := utils.GetInt64Param(ctx, "course_id")
 	if err != nil {
@@ -253,6 +329,18 @@ func (h *Handler) setCourseListeners(ctx fiber.Ctx) error {
 	return nil
 }
 
+// getCourseWithAllItems godoc
+//
+//	@Summary	Get course with sections and items
+//	@Tags		courses
+//	@Produce	json
+//	@Param		course_id	path		int	true	"Course ID"
+//	@Param		limit		query		int	false	"Page size"
+//	@Param		offset		query		int	false	"Page offset"
+//	@Success	200			{object}	domain.CourseWithItems
+//	@Failure	400			{object}	ErrorResponse
+//	@Failure	500			{object}	ErrorResponse
+//	@Router		/courses/{course_id}/with-all-items [get]
 func (h *Handler) getCourseWithAllItems(ctx fiber.Ctx) error {
 	courseID, err := utils.GetInt64Param(ctx, "course_id")
 	if err != nil {

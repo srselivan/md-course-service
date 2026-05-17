@@ -1,0 +1,1931 @@
+basePath: /cs/v1
+definitions:
+  course-service_internal_domain.Assignment:
+    properties:
+      deadline_days:
+        type: integer
+      description:
+        type: string
+      item_id:
+        type: integer
+      max_score:
+        type: integer
+    type: object
+  course-service_internal_domain.AttemptAnswer:
+    properties:
+      attempt_question_id:
+        type: integer
+      id:
+        type: integer
+      selected_answer_id:
+        type: integer
+      text_response:
+        type: string
+    type: object
+  course-service_internal_domain.AttemptPagination:
+    properties:
+      limit:
+        type: integer
+      offset:
+        type: integer
+      total:
+        type: integer
+    type: object
+  course-service_internal_domain.AttemptQuestionState:
+    properties:
+      answers:
+        items:
+          $ref: '#/definitions/course-service_internal_domain.PublicQuestionAnswer'
+        type: array
+      attempt_id:
+        type: integer
+      id:
+        type: integer
+      instructor_comment:
+        type: string
+      order_index:
+        type: integer
+      points:
+        type: integer
+      question:
+        $ref: '#/definitions/course-service_internal_domain.Question'
+      question_id:
+        type: integer
+      response:
+        items:
+          $ref: '#/definitions/course-service_internal_domain.AttemptAnswer'
+        type: array
+      score_awarded:
+        type: integer
+      text:
+        type: string
+      type:
+        $ref: '#/definitions/course-service_internal_domain.TestingQuestionType'
+    type: object
+  course-service_internal_domain.AttemptState:
+    properties:
+      attempt:
+        $ref: '#/definitions/course-service_internal_domain.TestAttempt'
+      pagination:
+        $ref: '#/definitions/course-service_internal_domain.AttemptPagination'
+      questions:
+        items:
+          $ref: '#/definitions/course-service_internal_domain.AttemptQuestionState'
+        type: array
+      remaining_seconds:
+        type: integer
+    type: object
+  course-service_internal_domain.Bank:
+    properties:
+      course_id:
+        type: integer
+      created_at:
+        type: string
+      description:
+        type: string
+      id:
+        type: integer
+      title:
+        type: string
+      updated_at:
+        type: string
+    type: object
+  course-service_internal_domain.BankAnswer:
+    properties:
+      answer_text:
+        type: string
+      id:
+        type: integer
+      is_correct:
+        type: boolean
+      question_id:
+        type: integer
+    type: object
+  course-service_internal_domain.BankQuestion:
+    properties:
+      answers:
+        items:
+          $ref: '#/definitions/course-service_internal_domain.BankAnswer'
+        type: array
+      bank_id:
+        type: integer
+      created_at:
+        type: string
+      default_points:
+        type: integer
+      id:
+        type: integer
+      question_text:
+        type: string
+      question_type:
+        $ref: '#/definitions/course-service_internal_domain.QuestionType'
+    type: object
+  course-service_internal_domain.Course:
+    properties:
+      createdAt:
+        type: string
+      description:
+        type: string
+      id:
+        type: integer
+      ownerUserId:
+        type: integer
+      stats:
+        $ref: '#/definitions/course-service_internal_domain.CourseStats'
+      status:
+        type: integer
+      title:
+        type: string
+      updatedAt:
+        type: string
+    type: object
+  course-service_internal_domain.CourseSection:
+    properties:
+      course_id:
+        type: integer
+      id:
+        type: integer
+      parent_id:
+        type: integer
+      sort_order:
+        type: integer
+      title:
+        type: string
+    type: object
+  course-service_internal_domain.CourseSectionItem:
+    properties:
+      id:
+        type: integer
+      is_published:
+        type: boolean
+      item_type:
+        type: string
+      section_id:
+        type: integer
+      sort_order:
+        type: integer
+      title:
+        type: string
+    type: object
+  course-service_internal_domain.CourseSectionWithItems:
+    properties:
+      course_id:
+        type: integer
+      id:
+        type: integer
+      items:
+        items:
+          $ref: '#/definitions/course-service_internal_domain.CourseSectionItem'
+        type: array
+      parent_id:
+        type: integer
+      sort_order:
+        type: integer
+      title:
+        type: string
+    type: object
+  course-service_internal_domain.CourseStats:
+    properties:
+      totalStudents:
+        type: integer
+    type: object
+  course-service_internal_domain.CourseWithItems:
+    properties:
+      createdAt:
+        type: string
+      description:
+        type: string
+      id:
+        type: integer
+      ownerUserId:
+        type: integer
+      sections:
+        items:
+          $ref: '#/definitions/course-service_internal_domain.CourseSectionWithItems'
+        type: array
+      stats:
+        $ref: '#/definitions/course-service_internal_domain.CourseStats'
+      status:
+        type: integer
+      title:
+        type: string
+      updatedAt:
+        type: string
+    type: object
+  course-service_internal_domain.PublicQuestionAnswer:
+    properties:
+      id:
+        type: integer
+      question_id:
+        type: integer
+      text:
+        type: string
+    type: object
+  course-service_internal_domain.Question:
+    properties:
+      answers:
+        items:
+          $ref: '#/definitions/course-service_internal_domain.QuestionAnswer'
+        type: array
+      bank_id:
+        type: integer
+      difficulty_level:
+        type: integer
+      id:
+        type: integer
+      points:
+        type: integer
+      text:
+        type: string
+      type:
+        $ref: '#/definitions/course-service_internal_domain.TestingQuestionType'
+    type: object
+  course-service_internal_domain.QuestionAnswer:
+    properties:
+      id:
+        type: integer
+      is_correct:
+        type: boolean
+      question_id:
+        type: integer
+      text:
+        type: string
+    type: object
+  course-service_internal_domain.QuestionType:
+    enum:
+    - 0
+    - 1
+    - 2
+    format: int32
+    type: integer
+    x-enum-varnames:
+    - QuestionTypeSingleChoice
+    - QuestionTypeMultipleChoice
+    - QuestionTypeText
+  course-service_internal_domain.Test:
+    properties:
+      available_from:
+        type: string
+      available_to:
+        type: string
+      bank_ids:
+        items:
+          type: integer
+        type: array
+      course_id:
+        type: integer
+      course_section_id:
+        type: integer
+      created_at:
+        type: string
+      description:
+        type: string
+      duration_seconds:
+        type: integer
+      generation_settings:
+        items:
+          type: integer
+        type: array
+      id:
+        type: integer
+      max_attempts:
+        type: integer
+      max_score:
+        type: integer
+      questions_count:
+        type: integer
+      title:
+        type: string
+    type: object
+  course-service_internal_domain.TestAttempt:
+    properties:
+      attempt_number:
+        type: integer
+      completed_at:
+        type: string
+      expires_at:
+        type: string
+      grade_status:
+        $ref: '#/definitions/course-service_internal_domain.TestGradeStatus'
+      id:
+        type: integer
+      started_at:
+        type: string
+      status:
+        $ref: '#/definitions/course-service_internal_domain.TestAttemptStatus'
+      test_id:
+        type: integer
+      total_score:
+        type: integer
+      user_id:
+        type: integer
+    type: object
+  course-service_internal_domain.TestAttemptStatus:
+    enum:
+    - IN_PROGRESS
+    - COMPLETED
+    - NEEDS_GRADING
+    type: string
+    x-enum-varnames:
+    - TestAttemptStatusInProgress
+    - TestAttemptStatusCompleted
+    - TestAttemptStatusNeedsGrading
+  course-service_internal_domain.TestGradeStatus:
+    enum:
+    - NONE
+    - READY
+    - PRE_GRADED
+    type: string
+    x-enum-varnames:
+    - TestGradeStatusNone
+    - TestGradeStatusReady
+    - TestGradeStatusPreGraded
+  course-service_internal_domain.TestWithAttempts:
+    properties:
+      attempts:
+        items:
+          $ref: '#/definitions/course-service_internal_domain.TestAttempt'
+        type: array
+      test:
+        $ref: '#/definitions/course-service_internal_domain.Test'
+    type: object
+  course-service_internal_domain.TestingQuestionType:
+    enum:
+    - SINGLE
+    - MULTIPLE
+    - TEXT
+    type: string
+    x-enum-varnames:
+    - TestingQuestionTypeSingle
+    - TestingQuestionTypeMultiple
+    - TestingQuestionTypeText
+  course-service_internal_transport_http_v1_request.BankAnswer:
+    properties:
+      answer_text:
+        type: string
+      is_correct:
+        type: boolean
+    type: object
+  course-service_internal_transport_http_v1_request.BulkCreateBankQuestion:
+    properties:
+      questions:
+        items:
+          $ref: '#/definitions/course-service_internal_transport_http_v1_request.CreateBankQuestion'
+        type: array
+    type: object
+  course-service_internal_transport_http_v1_request.BulkUpdateBankQuestion:
+    properties:
+      questions:
+        items:
+          $ref: '#/definitions/course-service_internal_transport_http_v1_request.UpdateBankQuestion'
+        type: array
+    type: object
+  course-service_internal_transport_http_v1_request.CreateAssignment:
+    properties:
+      deadline_days:
+        type: integer
+      description:
+        type: string
+      item_id:
+        type: integer
+      max_score:
+        type: integer
+    type: object
+  course-service_internal_transport_http_v1_request.CreateBank:
+    properties:
+      course_id:
+        type: integer
+      description:
+        type: string
+      title:
+        type: string
+    type: object
+  course-service_internal_transport_http_v1_request.CreateBankQuestion:
+    properties:
+      answers:
+        items:
+          $ref: '#/definitions/course-service_internal_transport_http_v1_request.BankAnswer'
+        type: array
+      bank_id:
+        type: integer
+      default_points:
+        type: integer
+      question_text:
+        type: string
+      question_type:
+        type: integer
+    type: object
+  course-service_internal_transport_http_v1_request.CreateCourse:
+    properties:
+      description:
+        type: string
+      ownerUserId:
+        type: integer
+      title:
+        type: string
+    type: object
+  course-service_internal_transport_http_v1_request.CreateCourseSection:
+    properties:
+      course_id:
+        type: integer
+      parent_id:
+        type: integer
+      sort_order:
+        type: integer
+      title:
+        type: string
+    type: object
+  course-service_internal_transport_http_v1_request.CreateCourseSectionItem:
+    properties:
+      is_published:
+        type: boolean
+      item_type:
+        type: string
+      section_id:
+        type: integer
+      sort_order:
+        type: integer
+      title:
+        type: string
+    type: object
+  course-service_internal_transport_http_v1_request.CreateTest:
+    properties:
+      available_from:
+        type: string
+      available_to:
+        type: string
+      bank_ids:
+        items:
+          type: integer
+        type: array
+      course_id:
+        type: integer
+      course_section_id:
+        type: integer
+      description:
+        type: string
+      duration_seconds:
+        type: integer
+      generation_settings:
+        items:
+          type: integer
+        type: array
+      max_attempts:
+        type: integer
+      max_score:
+        type: integer
+      questions_count:
+        type: integer
+      title:
+        type: string
+    type: object
+  course-service_internal_transport_http_v1_request.DeleteCourseListeners:
+    properties:
+      groupIds:
+        items:
+          type: integer
+        type: array
+      userIds:
+        items:
+          type: integer
+        type: array
+    type: object
+  course-service_internal_transport_http_v1_request.GradeAttempt:
+    properties:
+      scores:
+        items:
+          $ref: '#/definitions/course-service_internal_transport_http_v1_request.GradeAttemptQuestion'
+        type: array
+    type: object
+  course-service_internal_transport_http_v1_request.GradeAttemptQuestion:
+    properties:
+      attempt_question_id:
+        type: integer
+      instructor_comment:
+        type: string
+      score_awarded:
+        type: integer
+    type: object
+  course-service_internal_transport_http_v1_request.SaveAttemptAnswer:
+    properties:
+      attempt_question_id:
+        type: integer
+      selected_answer_id:
+        type: integer
+      selected_answer_ids:
+        items:
+          type: integer
+        type: array
+      text_response:
+        type: string
+    type: object
+  course-service_internal_transport_http_v1_request.SetCourseListener:
+    properties:
+      groupIds:
+        items:
+          type: integer
+        type: array
+      userIds:
+        items:
+          type: integer
+        type: array
+    type: object
+  course-service_internal_transport_http_v1_request.StartAttempt:
+    properties:
+      test_id:
+        type: integer
+      user_id:
+        type: integer
+    type: object
+  course-service_internal_transport_http_v1_request.UpdateAssignment:
+    properties:
+      deadline_days:
+        type: integer
+      description:
+        type: string
+      item_id:
+        type: integer
+      max_score:
+        type: integer
+    type: object
+  course-service_internal_transport_http_v1_request.UpdateBank:
+    properties:
+      course_id:
+        type: integer
+      description:
+        type: string
+      title:
+        type: string
+    type: object
+  course-service_internal_transport_http_v1_request.UpdateBankQuestion:
+    properties:
+      answers:
+        items:
+          $ref: '#/definitions/course-service_internal_transport_http_v1_request.BankAnswer'
+        type: array
+      bank_id:
+        type: integer
+      default_points:
+        type: integer
+      question_text:
+        type: string
+      question_type:
+        type: integer
+    type: object
+  course-service_internal_transport_http_v1_request.UpdateCourse:
+    properties:
+      description:
+        type: string
+      ownerUserId:
+        type: integer
+      status:
+        type: integer
+      title:
+        type: string
+    type: object
+  course-service_internal_transport_http_v1_request.UpdateCourseSection:
+    properties:
+      course_id:
+        type: integer
+      parent_id:
+        type: integer
+      sort_order:
+        type: integer
+      title:
+        type: string
+    type: object
+  course-service_internal_transport_http_v1_request.UpdateCourseSectionItem:
+    properties:
+      is_published:
+        type: boolean
+      item_type:
+        type: string
+      section_id:
+        type: integer
+      sort_order:
+        type: integer
+      title:
+        type: string
+    type: object
+  course-service_internal_transport_http_v1_request.UpdateTest:
+    properties:
+      available_from:
+        type: string
+      available_to:
+        type: string
+      bank_ids:
+        items:
+          type: integer
+        type: array
+      course_id:
+        type: integer
+      course_section_id:
+        type: integer
+      description:
+        type: string
+      duration_seconds:
+        type: integer
+      generation_settings:
+        items:
+          type: integer
+        type: array
+      id:
+        type: integer
+      max_attempts:
+        type: integer
+      max_score:
+        type: integer
+      questions_count:
+        type: integer
+      title:
+        type: string
+    type: object
+  internal_transport_http_v1.ErrorResponse:
+    properties:
+      message:
+        example: bad request
+        type: string
+    type: object
+host: localhost:8080
+info:
+  contact: {}
+  description: |-
+    REST API for courses, sections, assignments, question banks and tests.
+    Tests are also available under `/api` (same handlers as `/cs/v1`).
+  title: Course Service API
+  version: "1.0"
+paths:
+  /assignments:
+    get:
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              $ref: '#/definitions/course-service_internal_domain.Assignment'
+            type: array
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/internal_transport_http_v1.ErrorResponse'
+      summary: List assignments
+      tags:
+      - assignments
+    post:
+      consumes:
+      - application/json
+      parameters:
+      - description: Assignment
+        in: body
+        name: body
+        required: true
+        schema:
+          $ref: '#/definitions/course-service_internal_transport_http_v1_request.CreateAssignment'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+          schema:
+            $ref: '#/definitions/course-service_internal_domain.Assignment'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/internal_transport_http_v1.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/internal_transport_http_v1.ErrorResponse'
+      summary: Create assignment
+      tags:
+      - assignments
+  /assignments/{item_id}:
+    delete:
+      parameters:
+      - description: Section item ID
+        in: path
+        name: item_id
+        required: true
+        type: integer
+      responses:
+        "200":
+          description: OK
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/internal_transport_http_v1.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/internal_transport_http_v1.ErrorResponse'
+      summary: Delete assignment
+      tags:
+      - assignments
+    get:
+      parameters:
+      - description: Section item ID
+        in: path
+        name: item_id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/course-service_internal_domain.Assignment'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/internal_transport_http_v1.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/internal_transport_http_v1.ErrorResponse'
+      summary: Get assignment
+      tags:
+      - assignments
+    put:
+      consumes:
+      - application/json
+      parameters:
+      - description: Section item ID
+        in: path
+        name: item_id
+        required: true
+        type: integer
+      - description: Assignment
+        in: body
+        name: body
+        required: true
+        schema:
+          $ref: '#/definitions/course-service_internal_transport_http_v1_request.UpdateAssignment'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/course-service_internal_domain.Assignment'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/internal_transport_http_v1.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/internal_transport_http_v1.ErrorResponse'
+      summary: Update assignment
+      tags:
+      - assignments
+  /attempts:
+    get:
+      parameters:
+      - description: Filter by test ID
+        in: query
+        name: test_id
+        type: integer
+      - description: Filter by user ID
+        in: query
+        name: user_id
+        type: integer
+      - description: Filter by status
+        in: query
+        name: status
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              $ref: '#/definitions/course-service_internal_domain.TestAttempt'
+            type: array
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/internal_transport_http_v1.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/internal_transport_http_v1.ErrorResponse'
+      summary: List attempts
+      tags:
+      - attempts
+    post:
+      consumes:
+      - application/json
+      parameters:
+      - description: Questions page size
+        in: query
+        name: limit
+        type: integer
+      - description: Questions page offset
+        in: query
+        name: offset
+        type: integer
+      - description: Attempt
+        in: body
+        name: body
+        required: true
+        schema:
+          $ref: '#/definitions/course-service_internal_transport_http_v1_request.StartAttempt'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+          schema:
+            $ref: '#/definitions/course-service_internal_domain.AttemptState'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/internal_transport_http_v1.ErrorResponse'
+      summary: Start test attempt
+      tags:
+      - attempts
+  /attempts/{attempt_id}:
+    get:
+      parameters:
+      - description: Attempt ID
+        in: path
+        name: attempt_id
+        required: true
+        type: integer
+      - description: Questions page size
+        in: query
+        name: limit
+        type: integer
+      - description: Questions page offset
+        in: query
+        name: offset
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/course-service_internal_domain.AttemptState'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/internal_transport_http_v1.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/internal_transport_http_v1.ErrorResponse'
+      summary: Get attempt state
+      tags:
+      - attempts
+  /attempts/{attempt_id}/answers:
+    put:
+      consumes:
+      - application/json
+      parameters:
+      - description: Attempt ID
+        in: path
+        name: attempt_id
+        required: true
+        type: integer
+      - description: Answer
+        in: body
+        name: body
+        required: true
+        schema:
+          $ref: '#/definitions/course-service_internal_transport_http_v1_request.SaveAttemptAnswer'
+      responses:
+        "204":
+          description: No Content
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/internal_transport_http_v1.ErrorResponse'
+      summary: Save attempt answer
+      tags:
+      - attempts
+  /attempts/{attempt_id}/submit:
+    post:
+      parameters:
+      - description: Attempt ID
+        in: path
+        name: attempt_id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/course-service_internal_domain.TestAttempt'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/internal_transport_http_v1.ErrorResponse'
+      summary: Submit attempt for grading
+      tags:
+      - attempts
+  /bank_questions:
+    get:
+      parameters:
+      - description: Bank ID
+        in: query
+        name: bank_id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              $ref: '#/definitions/course-service_internal_domain.BankQuestion'
+            type: array
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/internal_transport_http_v1.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/internal_transport_http_v1.ErrorResponse'
+      summary: List bank questions
+      tags:
+      - bank-questions
+  /bank_questions/{id}/bulk:
+    put:
+      consumes:
+      - application/json
+      parameters:
+      - description: Bank ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      - description: Questions
+        in: body
+        name: body
+        required: true
+        schema:
+          $ref: '#/definitions/course-service_internal_transport_http_v1_request.BulkUpdateBankQuestion'
+      responses:
+        "200":
+          description: OK
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/internal_transport_http_v1.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/internal_transport_http_v1.ErrorResponse'
+      summary: Replace all questions in a bank
+      tags:
+      - bank-questions
+  /bank_questions/bulk:
+    post:
+      consumes:
+      - application/json
+      parameters:
+      - description: Questions
+        in: body
+        name: body
+        required: true
+        schema:
+          $ref: '#/definitions/course-service_internal_transport_http_v1_request.BulkCreateBankQuestion'
+      responses:
+        "201":
+          description: Created
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/internal_transport_http_v1.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/internal_transport_http_v1.ErrorResponse'
+      summary: Bulk create bank questions
+      tags:
+      - bank-questions
+  /bank_questions/generate:
+    post:
+      responses:
+        "200":
+          description: OK
+      summary: Generate bank questions (stub)
+      tags:
+      - bank-questions
+  /banks:
+    get:
+      parameters:
+      - description: Course ID
+        in: query
+        name: course_id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              $ref: '#/definitions/course-service_internal_domain.Bank'
+            type: array
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/internal_transport_http_v1.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/internal_transport_http_v1.ErrorResponse'
+      summary: List question banks
+      tags:
+      - banks
+    post:
+      consumes:
+      - application/json
+      parameters:
+      - description: Bank
+        in: body
+        name: body
+        required: true
+        schema:
+          $ref: '#/definitions/course-service_internal_transport_http_v1_request.CreateBank'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+          schema:
+            $ref: '#/definitions/course-service_internal_domain.Bank'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/internal_transport_http_v1.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/internal_transport_http_v1.ErrorResponse'
+      summary: Create question bank
+      tags:
+      - banks
+  /banks/{id}:
+    delete:
+      parameters:
+      - description: Bank ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      responses:
+        "200":
+          description: OK
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/internal_transport_http_v1.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/internal_transport_http_v1.ErrorResponse'
+      summary: Delete question bank
+      tags:
+      - banks
+    put:
+      consumes:
+      - application/json
+      parameters:
+      - description: Bank ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      - description: Bank
+        in: body
+        name: body
+        required: true
+        schema:
+          $ref: '#/definitions/course-service_internal_transport_http_v1_request.UpdateBank'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/course-service_internal_domain.Bank'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/internal_transport_http_v1.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/internal_transport_http_v1.ErrorResponse'
+      summary: Update question bank
+      tags:
+      - banks
+  /course-section-items:
+    get:
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              $ref: '#/definitions/course-service_internal_domain.CourseSectionItem'
+            type: array
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/internal_transport_http_v1.ErrorResponse'
+      summary: List section items
+      tags:
+      - course-section-items
+    post:
+      consumes:
+      - application/json
+      parameters:
+      - description: Item
+        in: body
+        name: body
+        required: true
+        schema:
+          $ref: '#/definitions/course-service_internal_transport_http_v1_request.CreateCourseSectionItem'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+          schema:
+            $ref: '#/definitions/course-service_internal_domain.CourseSectionItem'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/internal_transport_http_v1.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/internal_transport_http_v1.ErrorResponse'
+      summary: Create section item
+      tags:
+      - course-section-items
+  /course-section-items/{id}:
+    delete:
+      parameters:
+      - description: Item ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      responses:
+        "200":
+          description: OK
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/internal_transport_http_v1.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/internal_transport_http_v1.ErrorResponse'
+      summary: Delete section item
+      tags:
+      - course-section-items
+    get:
+      parameters:
+      - description: Item ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/course-service_internal_domain.CourseSectionItem'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/internal_transport_http_v1.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/internal_transport_http_v1.ErrorResponse'
+      summary: Get section item
+      tags:
+      - course-section-items
+    put:
+      consumes:
+      - application/json
+      parameters:
+      - description: Item ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      - description: Item
+        in: body
+        name: body
+        required: true
+        schema:
+          $ref: '#/definitions/course-service_internal_transport_http_v1_request.UpdateCourseSectionItem'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/course-service_internal_domain.CourseSectionItem'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/internal_transport_http_v1.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/internal_transport_http_v1.ErrorResponse'
+      summary: Update section item
+      tags:
+      - course-section-items
+  /course-sections:
+    get:
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              $ref: '#/definitions/course-service_internal_domain.CourseSection'
+            type: array
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/internal_transport_http_v1.ErrorResponse'
+      summary: List course sections
+      tags:
+      - course-sections
+    post:
+      consumes:
+      - application/json
+      parameters:
+      - description: Section
+        in: body
+        name: body
+        required: true
+        schema:
+          $ref: '#/definitions/course-service_internal_transport_http_v1_request.CreateCourseSection'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+          schema:
+            $ref: '#/definitions/course-service_internal_domain.CourseSection'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/internal_transport_http_v1.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/internal_transport_http_v1.ErrorResponse'
+      summary: Create course section
+      tags:
+      - course-sections
+  /course-sections/{id}:
+    delete:
+      parameters:
+      - description: Section ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      responses:
+        "200":
+          description: OK
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/internal_transport_http_v1.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/internal_transport_http_v1.ErrorResponse'
+      summary: Delete course section
+      tags:
+      - course-sections
+    get:
+      parameters:
+      - description: Section ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/course-service_internal_domain.CourseSection'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/internal_transport_http_v1.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/internal_transport_http_v1.ErrorResponse'
+      summary: Get course section
+      tags:
+      - course-sections
+    put:
+      consumes:
+      - application/json
+      parameters:
+      - description: Section ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      - description: Section
+        in: body
+        name: body
+        required: true
+        schema:
+          $ref: '#/definitions/course-service_internal_transport_http_v1_request.UpdateCourseSection'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/course-service_internal_domain.CourseSection'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/internal_transport_http_v1.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/internal_transport_http_v1.ErrorResponse'
+      summary: Update course section
+      tags:
+      - course-sections
+  /courses:
+    post:
+      consumes:
+      - application/json
+      parameters:
+      - description: Course
+        in: body
+        name: body
+        required: true
+        schema:
+          $ref: '#/definitions/course-service_internal_transport_http_v1_request.CreateCourse'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+          schema:
+            $ref: '#/definitions/course-service_internal_domain.Course'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/internal_transport_http_v1.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/internal_transport_http_v1.ErrorResponse'
+      summary: Create course
+      tags:
+      - courses
+  /courses/{course_id}/listeners:
+    delete:
+      consumes:
+      - application/json
+      parameters:
+      - description: Course ID
+        in: path
+        name: course_id
+        required: true
+        type: integer
+      - description: Listeners
+        in: body
+        name: body
+        required: true
+        schema:
+          $ref: '#/definitions/course-service_internal_transport_http_v1_request.DeleteCourseListeners'
+      responses:
+        "200":
+          description: OK
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/internal_transport_http_v1.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/internal_transport_http_v1.ErrorResponse'
+      summary: Remove course listeners
+      tags:
+      - courses
+    get:
+      parameters:
+      - description: Course ID
+        in: path
+        name: course_id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              format: int64
+              type: integer
+            type: array
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/internal_transport_http_v1.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/internal_transport_http_v1.ErrorResponse'
+      summary: List course listeners
+      tags:
+      - courses
+    post:
+      consumes:
+      - application/json
+      parameters:
+      - description: Course ID
+        in: path
+        name: course_id
+        required: true
+        type: integer
+      - description: Listeners
+        in: body
+        name: body
+        required: true
+        schema:
+          $ref: '#/definitions/course-service_internal_transport_http_v1_request.SetCourseListener'
+      responses:
+        "200":
+          description: OK
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/internal_transport_http_v1.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/internal_transport_http_v1.ErrorResponse'
+      summary: Add course listeners
+      tags:
+      - courses
+  /courses/{course_id}/with-all-items:
+    get:
+      parameters:
+      - description: Course ID
+        in: path
+        name: course_id
+        required: true
+        type: integer
+      - description: Page size
+        in: query
+        name: limit
+        type: integer
+      - description: Page offset
+        in: query
+        name: offset
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/course-service_internal_domain.CourseWithItems'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/internal_transport_http_v1.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/internal_transport_http_v1.ErrorResponse'
+      summary: Get course with sections and items
+      tags:
+      - courses
+  /courses/{id}:
+    delete:
+      parameters:
+      - description: Course ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      responses:
+        "200":
+          description: OK
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/internal_transport_http_v1.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/internal_transport_http_v1.ErrorResponse'
+      summary: Delete course
+      tags:
+      - courses
+    get:
+      parameters:
+      - description: Course ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/course-service_internal_domain.Course'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/internal_transport_http_v1.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/internal_transport_http_v1.ErrorResponse'
+      summary: Get course by ID
+      tags:
+      - courses
+    put:
+      consumes:
+      - application/json
+      parameters:
+      - description: Course ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      - description: Course
+        in: body
+        name: body
+        required: true
+        schema:
+          $ref: '#/definitions/course-service_internal_transport_http_v1_request.UpdateCourse'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/course-service_internal_domain.Course'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/internal_transport_http_v1.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/internal_transport_http_v1.ErrorResponse'
+      summary: Update course
+      tags:
+      - courses
+  /tests:
+    delete:
+      parameters:
+      - description: Test ID (query)
+        in: query
+        name: test_id
+        type: integer
+      responses:
+        "204":
+          description: No Content
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/internal_transport_http_v1.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/internal_transport_http_v1.ErrorResponse'
+      summary: Delete test
+      tags:
+      - tests
+    get:
+      parameters:
+      - description: Filter by course ID
+        in: query
+        name: course_id
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              $ref: '#/definitions/course-service_internal_domain.Test'
+            type: array
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/internal_transport_http_v1.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/internal_transport_http_v1.ErrorResponse'
+      summary: List tests
+      tags:
+      - tests
+    post:
+      consumes:
+      - application/json
+      parameters:
+      - description: Test
+        in: body
+        name: body
+        required: true
+        schema:
+          $ref: '#/definitions/course-service_internal_transport_http_v1_request.CreateTest'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+          schema:
+            $ref: '#/definitions/course-service_internal_domain.Test'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/internal_transport_http_v1.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/internal_transport_http_v1.ErrorResponse'
+      summary: Create test
+      tags:
+      - tests
+    put:
+      consumes:
+      - application/json
+      parameters:
+      - description: Test
+        in: body
+        name: body
+        required: true
+        schema:
+          $ref: '#/definitions/course-service_internal_transport_http_v1_request.UpdateTest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/course-service_internal_domain.Test'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/internal_transport_http_v1.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/internal_transport_http_v1.ErrorResponse'
+      summary: Update test
+      tags:
+      - tests
+  /tests/{test_id}:
+    delete:
+      parameters:
+      - description: Test ID (query)
+        in: query
+        name: test_id
+        type: integer
+      - description: Test ID (path)
+        in: path
+        name: test_id
+        type: integer
+      responses:
+        "204":
+          description: No Content
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/internal_transport_http_v1.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/internal_transport_http_v1.ErrorResponse'
+      summary: Delete test
+      tags:
+      - tests
+    get:
+      parameters:
+      - description: Test ID
+        in: path
+        name: test_id
+        required: true
+        type: integer
+      - description: User ID
+        in: query
+        name: user_id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/course-service_internal_domain.TestWithAttempts'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/internal_transport_http_v1.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/internal_transport_http_v1.ErrorResponse'
+      summary: Get test info with user attempts
+      tags:
+      - tests
+    put:
+      consumes:
+      - application/json
+      parameters:
+      - description: Test ID (path)
+        in: path
+        name: test_id
+        type: integer
+      - description: Test
+        in: body
+        name: body
+        required: true
+        schema:
+          $ref: '#/definitions/course-service_internal_transport_http_v1_request.UpdateTest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/course-service_internal_domain.Test'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/internal_transport_http_v1.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/internal_transport_http_v1.ErrorResponse'
+      summary: Update test
+      tags:
+      - tests
+  /tests/{test_id}/attempts:
+    get:
+      parameters:
+      - description: Test ID
+        in: path
+        name: test_id
+        required: true
+        type: integer
+      - description: Filter by user ID
+        in: query
+        name: user_id
+        type: integer
+      - description: Filter by status
+        in: query
+        name: status
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              $ref: '#/definitions/course-service_internal_domain.TestAttempt'
+            type: array
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/internal_transport_http_v1.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/internal_transport_http_v1.ErrorResponse'
+      summary: List attempts for a test
+      tags:
+      - tests
+  /tests/{test_id}/attempts/{attempt_id}:
+    get:
+      parameters:
+      - description: Test ID
+        in: path
+        name: test_id
+        required: true
+        type: integer
+      - description: Attempt ID
+        in: path
+        name: attempt_id
+        required: true
+        type: integer
+      - description: Questions page size
+        in: query
+        name: limit
+        type: integer
+      - description: Questions page offset
+        in: query
+        name: offset
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/course-service_internal_domain.AttemptState'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/internal_transport_http_v1.ErrorResponse'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/internal_transport_http_v1.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/internal_transport_http_v1.ErrorResponse'
+      summary: Get attempt state within a test
+      tags:
+      - tests
+  /tests/{test_id}/attempts/{attempt_id}/grades:
+    post:
+      consumes:
+      - application/json
+      parameters:
+      - description: Test ID
+        in: path
+        name: test_id
+        required: true
+        type: integer
+      - description: Attempt ID
+        in: path
+        name: attempt_id
+        required: true
+        type: integer
+      - description: Scores
+        in: body
+        name: body
+        required: true
+        schema:
+          $ref: '#/definitions/course-service_internal_transport_http_v1_request.GradeAttempt'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/course-service_internal_domain.TestAttempt'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/internal_transport_http_v1.ErrorResponse'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/internal_transport_http_v1.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/internal_transport_http_v1.ErrorResponse'
+      summary: Grade attempt manually
+      tags:
+      - tests
+schemes:
+- http
+swagger: "2.0"

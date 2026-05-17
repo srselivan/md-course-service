@@ -3,10 +3,10 @@ package assignments
 import "course-service/internal/domain"
 
 type assignmentModel struct {
-	ItemId       int64  `gorm:"column:item_id;primaryKey"`
-	Description  string `gorm:"column:description;not null"`
-	MaxScore     int    `gorm:"column:max_score"`
-	DeadlineDays *int   `gorm:"column:deadline_days"`
+	ItemId       int64  `db:"item_id"`
+	Description  string `db:"description"`
+	MaxScore     int    `db:"max_score"`
+	DeadlineDays *int   `db:"deadline_days"`
 }
 
 func (m assignmentModel) toDomain() domain.Assignment {

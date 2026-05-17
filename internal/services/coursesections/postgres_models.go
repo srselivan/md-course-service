@@ -3,11 +3,11 @@ package coursesections
 import "course-service/internal/domain"
 
 type courseSectionModel struct {
-	ID        int64
-	CourseId  int64
-	ParentId  *int64
-	Title     string
-	SortOrder int
+	ID        int64  `db:"id"`
+	CourseId  int64  `db:"course_id"`
+	ParentId  *int64 `db:"parent_id"`
+	Title     string `db:"title"`
+	SortOrder int    `db:"sort_order"`
 }
 
 func (m courseSectionModel) toDomain() domain.CourseSection {

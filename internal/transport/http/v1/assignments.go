@@ -1,11 +1,14 @@
 package v1
 
 import (
+	"encoding/json"
+	"net/http"
+
 	"course-service/internal/services/assignments"
 	"course-service/internal/transport/http/utils"
 	"course-service/internal/transport/http/v1/request"
-	"encoding/json"
-	"net/http"
+
+	_ "course-service/internal/domain"
 
 	"github.com/gofiber/fiber/v3"
 )
@@ -20,6 +23,17 @@ func (h *Handler) NewAssignmentsRoutes(router fiber.Router) {
 	assignmentsGroup.Get("/", h.getAssignmentsList)
 }
 
+// createAssignment godoc
+//
+//	@Summary	Create assignment
+//	@Tags		assignments
+//	@Accept		json
+//	@Produce	json
+//	@Param		body	body		request.CreateAssignment	true	"Assignment"
+//	@Success	201		{object}	domain.Assignment
+//	@Failure	400		{object}	ErrorResponse
+//	@Failure	500		{object}	ErrorResponse
+//	@Router		/assignments [post]
 func (h *Handler) createAssignment(ctx fiber.Ctx) error {
 	var req request.CreateAssignment
 	if err := json.Unmarshal(ctx.Body(), &req); err != nil {
@@ -48,6 +62,18 @@ func (h *Handler) createAssignment(ctx fiber.Ctx) error {
 	return nil
 }
 
+// updateAssignment godoc
+//
+//	@Summary	Update assignment
+//	@Tags		assignments
+//	@Accept		json
+//	@Produce	json
+//	@Param		item_id	path		int							true	"Section item ID"
+//	@Param		body	body		request.UpdateAssignment	true	"Assignment"
+//	@Success	200		{object}	domain.Assignment
+//	@Failure	400		{object}	ErrorResponse
+//	@Failure	500		{object}	ErrorResponse
+//	@Router		/assignments/{item_id} [put]
 func (h *Handler) updateAssignment(ctx fiber.Ctx) error {
 	itemId, err := utils.GetInt64Param(ctx, "item_id")
 	if err != nil {
@@ -81,6 +107,15 @@ func (h *Handler) updateAssignment(ctx fiber.Ctx) error {
 	return nil
 }
 
+// deleteAssignment godoc
+//
+//	@Summary	Delete assignment
+//	@Tags		assignments
+//	@Param		item_id	path	int	true	"Section item ID"
+//	@Success	200
+//	@Failure	400	{object}	ErrorResponse
+//	@Failure	500	{object}	ErrorResponse
+//	@Router		/assignments/{item_id} [delete]
 func (h *Handler) deleteAssignment(ctx fiber.Ctx) error {
 	itemId, err := utils.GetInt64Param(ctx, "item_id")
 	if err != nil {
@@ -98,6 +133,16 @@ func (h *Handler) deleteAssignment(ctx fiber.Ctx) error {
 	return nil
 }
 
+// getAssignment godoc
+//
+//	@Summary	Get assignment
+//	@Tags		assignments
+//	@Produce	json
+//	@Param		item_id	path		int	true	"Section item ID"
+//	@Success	200		{object}	domain.Assignment
+//	@Failure	400		{object}	ErrorResponse
+//	@Failure	500		{object}	ErrorResponse
+//	@Router		/assignments/{item_id} [get]
 func (h *Handler) getAssignment(ctx fiber.Ctx) error {
 	itemId, err := utils.GetInt64Param(ctx, "item_id")
 	if err != nil {
@@ -121,6 +166,14 @@ func (h *Handler) getAssignment(ctx fiber.Ctx) error {
 	return nil
 }
 
+// getAssignmentsList godoc
+//
+//	@Summary	List assignments
+//	@Tags		assignments
+//	@Produce	json
+//	@Success	200	{array}		domain.Assignment
+//	@Failure	500	{object}	ErrorResponse
+//	@Router		/assignments [get]
 func (h *Handler) getAssignmentsList(ctx fiber.Ctx) error {
 	assignmentsList, err := h.assignmentsService.GetList(ctx.Context(), assignments.GetListServiceParams{})
 	if err != nil {

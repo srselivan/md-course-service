@@ -1,11 +1,14 @@
 package v1
 
 import (
+	"encoding/json"
+	"net/http"
+
 	"course-service/internal/services/banks"
 	"course-service/internal/transport/http/utils"
 	"course-service/internal/transport/http/v1/request"
-	"encoding/json"
-	"net/http"
+
+	_ "course-service/internal/domain"
 
 	"github.com/gofiber/fiber/v3"
 )
@@ -19,6 +22,17 @@ func (h *Handler) NewBanksRoutes(router fiber.Router) {
 	banksGroup.Get("/", h.getBanksList)
 }
 
+// createBank godoc
+//
+//	@Summary	Create question bank
+//	@Tags		banks
+//	@Accept		json
+//	@Produce	json
+//	@Param		body	body		request.CreateBank	true	"Bank"
+//	@Success	201		{object}	domain.Bank
+//	@Failure	400		{object}	ErrorResponse
+//	@Failure	500		{object}	ErrorResponse
+//	@Router		/banks [post]
 func (h *Handler) createBank(ctx fiber.Ctx) error {
 	var req request.CreateBank
 	if err := json.Unmarshal(ctx.Body(), &req); err != nil {
@@ -46,6 +60,18 @@ func (h *Handler) createBank(ctx fiber.Ctx) error {
 	return nil
 }
 
+// updateBank godoc
+//
+//	@Summary	Update question bank
+//	@Tags		banks
+//	@Accept		json
+//	@Produce	json
+//	@Param		id		path		int					true	"Bank ID"
+//	@Param		body	body		request.UpdateBank	true	"Bank"
+//	@Success	200		{object}	domain.Bank
+//	@Failure	400		{object}	ErrorResponse
+//	@Failure	500		{object}	ErrorResponse
+//	@Router		/banks/{id} [put]
 func (h *Handler) updateBank(ctx fiber.Ctx) error {
 	id, err := utils.GetInt64Param(ctx, "id")
 	if err != nil {
@@ -79,6 +105,15 @@ func (h *Handler) updateBank(ctx fiber.Ctx) error {
 	return nil
 }
 
+// deleteBank godoc
+//
+//	@Summary	Delete question bank
+//	@Tags		banks
+//	@Param		id	path	int	true	"Bank ID"
+//	@Success	200
+//	@Failure	400	{object}	ErrorResponse
+//	@Failure	500	{object}	ErrorResponse
+//	@Router		/banks/{id} [delete]
 func (h *Handler) deleteBank(ctx fiber.Ctx) error {
 	id, err := utils.GetInt64Param(ctx, "id")
 	if err != nil {
@@ -96,6 +131,16 @@ func (h *Handler) deleteBank(ctx fiber.Ctx) error {
 	return nil
 }
 
+// getBanksList godoc
+//
+//	@Summary	List question banks
+//	@Tags		banks
+//	@Produce	json
+//	@Param		course_id	query		int	true	"Course ID"
+//	@Success	200			{array}		domain.Bank
+//	@Failure	400			{object}	ErrorResponse
+//	@Failure	500			{object}	ErrorResponse
+//	@Router		/banks [get]
 func (h *Handler) getBanksList(ctx fiber.Ctx) error {
 	courseId, err := utils.GetInt64Query(ctx, "course_id")
 	if err != nil {

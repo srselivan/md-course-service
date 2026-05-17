@@ -11,6 +11,8 @@ import (
 	"course-service/internal/transport/http/utils"
 	"course-service/internal/transport/http/v1/request"
 
+	_ "course-service/internal/domain"
+
 	"github.com/gofiber/fiber/v3"
 )
 
@@ -62,6 +64,16 @@ func (h *Handler) createBankQuestion(ctx fiber.Ctx) error {
 	return nil
 }
 
+// bulkCreateBankQuestion godoc
+//
+//	@Summary	Bulk create bank questions
+//	@Tags		bank-questions
+//	@Accept		json
+//	@Param		body	body	request.BulkCreateBankQuestion	true	"Questions"
+//	@Success	201
+//	@Failure	400	{object}	ErrorResponse
+//	@Failure	500	{object}	ErrorResponse
+//	@Router		/bank_questions/bulk [post]
 func (h *Handler) bulkCreateBankQuestion(ctx fiber.Ctx) error {
 	var req request.BulkCreateBankQuestion
 	if err := json.Unmarshal(ctx.Body(), &req); err != nil {
@@ -130,6 +142,17 @@ func (h *Handler) updateBankQuestion(ctx fiber.Ctx) error {
 	return nil
 }
 
+// bulkUpdateBankQuestion godoc
+//
+//	@Summary	Replace all questions in a bank
+//	@Tags		bank-questions
+//	@Accept		json
+//	@Param		id		path	int								true	"Bank ID"
+//	@Param		body	body	request.BulkUpdateBankQuestion	true	"Questions"
+//	@Success	200
+//	@Failure	400	{object}	ErrorResponse
+//	@Failure	500	{object}	ErrorResponse
+//	@Router		/bank_questions/{id}/bulk [put]
 func (h *Handler) bulkUpdateBankQuestion(ctx fiber.Ctx) error {
 	id, err := utils.GetInt64Param(ctx, "id")
 	if err != nil {
@@ -161,6 +184,16 @@ func (h *Handler) bulkUpdateBankQuestion(ctx fiber.Ctx) error {
 	return nil
 }
 
+// getBankQuestionsList godoc
+//
+//	@Summary	List bank questions
+//	@Tags		bank-questions
+//	@Produce	json
+//	@Param		bank_id	query		int	true	"Bank ID"
+//	@Success	200		{array}		domain.BankQuestion
+//	@Failure	400		{object}	ErrorResponse
+//	@Failure	500		{object}	ErrorResponse
+//	@Router		/bank_questions [get]
 func (h *Handler) getBankQuestionsList(ctx fiber.Ctx) error {
 	bankId, err := utils.GetInt64Query(ctx, "bank_id")
 	if err != nil {
@@ -186,7 +219,12 @@ func (h *Handler) getBankQuestionsList(ctx fiber.Ctx) error {
 	return nil
 }
 
+// generateBankQuestions godoc
+//
+//	@Summary	Generate bank questions (stub)
+//	@Tags		bank-questions
+//	@Success	200
+//	@Router		/bank_questions/generate [post]
 func (h *Handler) generateBankQuestions(ctx fiber.Ctx) error {
-
 	return nil
 }

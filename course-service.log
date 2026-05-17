@@ -35,3 +35,140 @@
 {"level":"info","caller":"C:/Users/serge/projects/course-service/cmd/app/main.go:78","time":"2026-03-26T19:19:43+03:00","message":"postgres connection closed"}
 {"level":"info","caller":"C:/Users/serge/projects/course-service/cmd/app/main.go:83","time":"2026-03-26T19:19:43+03:00","message":"http server shutdown complete"}
 {"level":"info","caller":"C:/Users/serge/projects/course-service/cmd/app/main.go:85","time":"2026-03-26T19:19:43+03:00","message":"course service shutdown complete"}
+{"level":"fatal","error":"sqlx.Connect: failed to connect to `user=postgres database=course`: hostname resolving error: lookup postgres: no such host","caller":"C:/Users/serge/projects/course-service/cmd/app/main.go:44","time":"2026-03-27T19:24:04+03:00","message":"failed to connect to postgres"}
+{"level":"info","caller":"C:/Users/serge/projects/course-service/cmd/app/main.go:67","time":"2026-03-27T19:24:23+03:00","message":"http server started at 0.0.0.0:10001"}
+{"level":"info","caller":"C:/Users/serge/projects/course-service/cmd/app/main.go:68","time":"2026-03-27T19:24:23+03:00","message":"course service started"}
+{"level":"info","caller":"C:/Users/serge/projects/course-service/cmd/app/main.go:68","time":"2026-03-27T19:30:36+03:00","message":"http server started at 0.0.0.0:10001"}
+{"level":"info","caller":"C:/Users/serge/projects/course-service/cmd/app/main.go:69","time":"2026-03-27T19:30:36+03:00","message":"course service started"}
+{"level":"info","caller":"C:/Users/serge/projects/course-service/cmd/app/main.go:74","time":"2026-03-27T19:31:50+03:00","message":"shutting down course service..."}
+{"level":"info","caller":"C:/Users/serge/projects/course-service/cmd/app/main.go:79","time":"2026-03-27T19:31:50+03:00","message":"postgres connection closed"}
+{"level":"info","caller":"C:/Users/serge/projects/course-service/cmd/app/main.go:84","time":"2026-03-27T19:31:51+03:00","message":"http server shutdown complete"}
+{"level":"info","caller":"C:/Users/serge/projects/course-service/cmd/app/main.go:86","time":"2026-03-27T19:31:51+03:00","message":"course service shutdown complete"}
+{"level":"info","caller":"C:/Users/serge/projects/course-service/cmd/app/main.go:68","time":"2026-03-27T19:31:53+03:00","message":"http server started at 0.0.0.0:10001"}
+{"level":"info","caller":"C:/Users/serge/projects/course-service/cmd/app/main.go:69","time":"2026-03-27T19:31:53+03:00","message":"course service started"}
+{"level":"info","caller":"C:/Users/serge/projects/course-service/cmd/app/main.go:74","time":"2026-03-27T22:22:08+03:00","message":"shutting down course service..."}
+{"level":"info","caller":"C:/Users/serge/projects/course-service/cmd/app/main.go:79","time":"2026-03-27T22:22:08+03:00","message":"postgres connection closed"}
+{"level":"info","caller":"C:/Users/serge/projects/course-service/cmd/app/main.go:84","time":"2026-03-27T22:22:08+03:00","message":"http server shutdown complete"}
+{"level":"info","caller":"C:/Users/serge/projects/course-service/cmd/app/main.go:86","time":"2026-03-27T22:22:08+03:00","message":"course service shutdown complete"}
+{"level":"info","caller":"C:/Users/serge/projects/course-service/cmd/app/main.go:68","time":"2026-03-29T13:14:48+03:00","message":"http server started at 0.0.0.0:10001"}
+{"level":"info","caller":"C:/Users/serge/projects/course-service/cmd/app/main.go:69","time":"2026-03-29T13:14:48+03:00","message":"course service started"}
+{"level":"info","caller":"C:/Users/serge/projects/course-service/cmd/app/main.go:79","time":"2026-03-29T13:31:40+03:00","message":"http server started at 0.0.0.0:10001"}
+{"level":"info","caller":"C:/Users/serge/projects/course-service/cmd/app/main.go:80","time":"2026-03-29T13:31:40+03:00","message":"course service started"}
+{"level":"info","caller":"C:/Users/serge/projects/course-service/cmd/app/main.go:85","time":"2026-03-29T17:54:37+03:00","message":"shutting down course service..."}
+{"level":"info","caller":"C:/Users/serge/projects/course-service/cmd/app/main.go:90","time":"2026-03-29T17:54:37+03:00","message":"postgres connection closed"}
+{"level":"info","caller":"C:/Users/serge/projects/course-service/cmd/app/main.go:95","time":"2026-03-29T17:54:37+03:00","message":"http server shutdown complete"}
+{"level":"info","caller":"C:/Users/serge/projects/course-service/cmd/app/main.go:97","time":"2026-03-29T17:54:37+03:00","message":"course service shutdown complete"}
+{"level":"info","caller":"C:/Users/serge/projects/course-service/cmd/app/main.go:79","time":"2026-03-29T17:54:42+03:00","message":"http server started at 0.0.0.0:10001"}
+{"level":"info","caller":"C:/Users/serge/projects/course-service/cmd/app/main.go:80","time":"2026-03-29T17:54:42+03:00","message":"course service started"}
+{"level":"info","caller":"C:/Users/serge/projects/course-service/cmd/app/main.go:85","time":"2026-03-29T17:56:35+03:00","message":"shutting down course service..."}
+{"level":"info","caller":"C:/Users/serge/projects/course-service/cmd/app/main.go:90","time":"2026-03-29T17:56:35+03:00","message":"postgres connection closed"}
+{"level":"info","caller":"C:/Users/serge/projects/course-service/cmd/app/main.go:95","time":"2026-03-29T17:56:35+03:00","message":"http server shutdown complete"}
+{"level":"info","caller":"C:/Users/serge/projects/course-service/cmd/app/main.go:97","time":"2026-03-29T17:56:35+03:00","message":"course service shutdown complete"}
+{"level":"info","caller":"C:/Users/serge/projects/course-service/cmd/app/main.go:79","time":"2026-03-29T17:56:39+03:00","message":"http server started at 0.0.0.0:10001"}
+{"level":"info","caller":"C:/Users/serge/projects/course-service/cmd/app/main.go:80","time":"2026-03-29T17:56:39+03:00","message":"course service started"}
+{"level":"info","caller":"C:/Users/serge/projects/course-service/cmd/app/main.go:85","time":"2026-03-29T18:19:08+03:00","message":"shutting down course service..."}
+{"level":"info","caller":"C:/Users/serge/projects/course-service/cmd/app/main.go:90","time":"2026-03-29T18:19:08+03:00","message":"postgres connection closed"}
+{"level":"info","caller":"C:/Users/serge/projects/course-service/cmd/app/main.go:95","time":"2026-03-29T18:19:08+03:00","message":"http server shutdown complete"}
+{"level":"info","caller":"C:/Users/serge/projects/course-service/cmd/app/main.go:97","time":"2026-03-29T18:19:08+03:00","message":"course service shutdown complete"}
+{"level":"info","caller":"C:/Users/serge/projects/course-service/cmd/app/main.go:79","time":"2026-04-06T19:33:35+03:00","message":"http server started at 0.0.0.0:10001"}
+{"level":"info","caller":"C:/Users/serge/projects/course-service/cmd/app/main.go:80","time":"2026-04-06T19:33:35+03:00","message":"course service started"}
+{"level":"info","caller":"C:/Users/serge/projects/course-service/cmd/app/main.go:85","time":"2026-04-06T19:40:31+03:00","message":"shutting down course service..."}
+{"level":"info","caller":"C:/Users/serge/projects/course-service/cmd/app/main.go:90","time":"2026-04-06T19:40:31+03:00","message":"postgres connection closed"}
+{"level":"info","caller":"C:/Users/serge/projects/course-service/cmd/app/main.go:95","time":"2026-04-06T19:40:31+03:00","message":"http server shutdown complete"}
+{"level":"info","caller":"C:/Users/serge/projects/course-service/cmd/app/main.go:97","time":"2026-04-06T19:40:31+03:00","message":"course service shutdown complete"}
+{"level":"info","caller":"C:/Users/serge/projects/course-service/cmd/app/main.go:79","time":"2026-04-06T19:41:43+03:00","message":"http server started at 0.0.0.0:10001"}
+{"level":"info","caller":"C:/Users/serge/projects/course-service/cmd/app/main.go:80","time":"2026-04-06T19:41:43+03:00","message":"course service started"}
+{"level":"info","caller":"C:/Users/serge/projects/course-service/cmd/app/main.go:85","time":"2026-04-06T19:57:43+03:00","message":"shutting down course service..."}
+{"level":"info","caller":"C:/Users/serge/projects/course-service/cmd/app/main.go:90","time":"2026-04-06T19:57:43+03:00","message":"postgres connection closed"}
+{"level":"info","caller":"C:/Users/serge/projects/course-service/cmd/app/main.go:95","time":"2026-04-06T19:57:43+03:00","message":"http server shutdown complete"}
+{"level":"info","caller":"C:/Users/serge/projects/course-service/cmd/app/main.go:97","time":"2026-04-06T19:57:43+03:00","message":"course service shutdown complete"}
+{"level":"info","caller":"C:/Users/serge/projects/course-service/cmd/app/main.go:79","time":"2026-04-06T19:57:46+03:00","message":"http server started at 0.0.0.0:10001"}
+{"level":"info","caller":"C:/Users/serge/projects/course-service/cmd/app/main.go:80","time":"2026-04-06T19:57:46+03:00","message":"course service started"}
+{"level":"info","caller":"C:/Users/serge/projects/course-service/cmd/app/main.go:85","time":"2026-04-06T19:58:53+03:00","message":"shutting down course service..."}
+{"level":"info","caller":"C:/Users/serge/projects/course-service/cmd/app/main.go:90","time":"2026-04-06T19:58:53+03:00","message":"postgres connection closed"}
+{"level":"info","caller":"C:/Users/serge/projects/course-service/cmd/app/main.go:95","time":"2026-04-06T19:58:53+03:00","message":"http server shutdown complete"}
+{"level":"info","caller":"C:/Users/serge/projects/course-service/cmd/app/main.go:97","time":"2026-04-06T19:58:53+03:00","message":"course service shutdown complete"}
+{"level":"info","caller":"C:/Users/serge/projects/course-service/cmd/app/main.go:79","time":"2026-04-06T19:58:56+03:00","message":"http server started at 0.0.0.0:10001"}
+{"level":"info","caller":"C:/Users/serge/projects/course-service/cmd/app/main.go:80","time":"2026-04-06T19:58:56+03:00","message":"course service started"}
+{"level":"info","caller":"C:/Users/serge/projects/course-service/cmd/app/main.go:85","time":"2026-04-06T21:36:05+03:00","message":"shutting down course service..."}
+{"level":"info","caller":"C:/Users/serge/projects/course-service/cmd/app/main.go:90","time":"2026-04-06T21:36:05+03:00","message":"postgres connection closed"}
+{"level":"info","caller":"C:/Users/serge/projects/course-service/cmd/app/main.go:95","time":"2026-04-06T21:36:05+03:00","message":"http server shutdown complete"}
+{"level":"info","caller":"C:/Users/serge/projects/course-service/cmd/app/main.go:97","time":"2026-04-06T21:36:05+03:00","message":"course service shutdown complete"}
+{"level":"info","caller":"C:/Users/serge/projects/course-service/cmd/app/main.go:79","time":"2026-04-09T18:37:35+03:00","message":"http server started at 0.0.0.0:10001"}
+{"level":"info","caller":"C:/Users/serge/projects/course-service/cmd/app/main.go:80","time":"2026-04-09T18:37:35+03:00","message":"course service started"}
+{"level":"info","caller":"C:/Users/serge/projects/course-service/cmd/app/main.go:85","time":"2026-04-09T18:49:53+03:00","message":"shutting down course service..."}
+{"level":"info","caller":"C:/Users/serge/projects/course-service/cmd/app/main.go:90","time":"2026-04-09T18:49:53+03:00","message":"postgres connection closed"}
+{"level":"info","caller":"C:/Users/serge/projects/course-service/cmd/app/main.go:95","time":"2026-04-09T18:49:54+03:00","message":"http server shutdown complete"}
+{"level":"info","caller":"C:/Users/serge/projects/course-service/cmd/app/main.go:97","time":"2026-04-09T18:49:54+03:00","message":"course service shutdown complete"}
+{"level":"info","caller":"C:/Users/serge/projects/course-service/cmd/app/main.go:79","time":"2026-04-09T18:49:58+03:00","message":"http server started at 0.0.0.0:10001"}
+{"level":"info","caller":"C:/Users/serge/projects/course-service/cmd/app/main.go:80","time":"2026-04-09T18:49:58+03:00","message":"course service started"}
+{"level":"info","caller":"C:/Users/serge/projects/course-service/cmd/app/main.go:85","time":"2026-04-09T18:52:40+03:00","message":"shutting down course service..."}
+{"level":"info","caller":"C:/Users/serge/projects/course-service/cmd/app/main.go:90","time":"2026-04-09T18:52:40+03:00","message":"postgres connection closed"}
+{"level":"info","caller":"C:/Users/serge/projects/course-service/cmd/app/main.go:95","time":"2026-04-09T18:52:40+03:00","message":"http server shutdown complete"}
+{"level":"info","caller":"C:/Users/serge/projects/course-service/cmd/app/main.go:97","time":"2026-04-09T18:52:40+03:00","message":"course service shutdown complete"}
+{"level":"info","caller":"C:/Users/serge/projects/course-service/cmd/app/main.go:79","time":"2026-04-09T18:52:43+03:00","message":"http server started at 0.0.0.0:10001"}
+{"level":"info","caller":"C:/Users/serge/projects/course-service/cmd/app/main.go:80","time":"2026-04-09T18:52:43+03:00","message":"course service started"}
+{"level":"info","caller":"C:/Users/serge/projects/course-service/cmd/app/main.go:85","time":"2026-04-09T18:53:48+03:00","message":"shutting down course service..."}
+{"level":"info","caller":"C:/Users/serge/projects/course-service/cmd/app/main.go:90","time":"2026-04-09T18:53:48+03:00","message":"postgres connection closed"}
+{"level":"info","caller":"C:/Users/serge/projects/course-service/cmd/app/main.go:95","time":"2026-04-09T18:53:48+03:00","message":"http server shutdown complete"}
+{"level":"info","caller":"C:/Users/serge/projects/course-service/cmd/app/main.go:97","time":"2026-04-09T18:53:48+03:00","message":"course service shutdown complete"}
+{"level":"info","caller":"C:/Users/serge/projects/course-service/cmd/app/main.go:79","time":"2026-04-09T18:53:51+03:00","message":"http server started at 0.0.0.0:10001"}
+{"level":"info","caller":"C:/Users/serge/projects/course-service/cmd/app/main.go:80","time":"2026-04-09T18:53:51+03:00","message":"course service started"}
+{"level":"info","caller":"C:/Users/serge/projects/course-service/cmd/app/main.go:79","time":"2026-04-10T19:40:15+03:00","message":"http server started at 0.0.0.0:10001"}
+{"level":"info","caller":"C:/Users/serge/projects/course-service/cmd/app/main.go:80","time":"2026-04-10T19:40:15+03:00","message":"course service started"}
+{"level":"info","caller":"C:/Users/serge/projects/course-service/cmd/app/main.go:85","time":"2026-04-10T19:41:41+03:00","message":"shutting down course service..."}
+{"level":"info","caller":"C:/Users/serge/projects/course-service/cmd/app/main.go:90","time":"2026-04-10T19:41:41+03:00","message":"postgres connection closed"}
+{"level":"info","caller":"C:/Users/serge/projects/course-service/cmd/app/main.go:95","time":"2026-04-10T19:41:41+03:00","message":"http server shutdown complete"}
+{"level":"info","caller":"C:/Users/serge/projects/course-service/cmd/app/main.go:97","time":"2026-04-10T19:41:41+03:00","message":"course service shutdown complete"}
+{"level":"info","caller":"C:/Users/serge/projects/course-service/cmd/app/main.go:79","time":"2026-04-10T19:42:03+03:00","message":"http server started at 0.0.0.0:10001"}
+{"level":"info","caller":"C:/Users/serge/projects/course-service/cmd/app/main.go:80","time":"2026-04-10T19:42:03+03:00","message":"course service started"}
+{"level":"info","caller":"C:/Users/serge/projects/course-service/cmd/app/main.go:85","time":"2026-04-10T19:42:17+03:00","message":"shutting down course service..."}
+{"level":"info","caller":"C:/Users/serge/projects/course-service/cmd/app/main.go:90","time":"2026-04-10T19:42:17+03:00","message":"postgres connection closed"}
+{"level":"info","caller":"C:/Users/serge/projects/course-service/cmd/app/main.go:95","time":"2026-04-10T19:42:17+03:00","message":"http server shutdown complete"}
+{"level":"info","caller":"C:/Users/serge/projects/course-service/cmd/app/main.go:97","time":"2026-04-10T19:42:17+03:00","message":"course service shutdown complete"}
+{"level":"info","caller":"C:/Users/serge/projects/course-service/cmd/app/main.go:79","time":"2026-04-10T19:44:00+03:00","message":"http server started at 0.0.0.0:10001"}
+{"level":"info","caller":"C:/Users/serge/projects/course-service/cmd/app/main.go:80","time":"2026-04-10T19:44:00+03:00","message":"course service started"}
+{"level":"info","caller":"C:/Users/serge/projects/course-service/cmd/app/main.go:85","time":"2026-04-10T19:45:53+03:00","message":"shutting down course service..."}
+{"level":"info","caller":"C:/Users/serge/projects/course-service/cmd/app/main.go:90","time":"2026-04-10T19:45:53+03:00","message":"postgres connection closed"}
+{"level":"info","caller":"C:/Users/serge/projects/course-service/cmd/app/main.go:95","time":"2026-04-10T19:45:53+03:00","message":"http server shutdown complete"}
+{"level":"info","caller":"C:/Users/serge/projects/course-service/cmd/app/main.go:97","time":"2026-04-10T19:45:53+03:00","message":"course service shutdown complete"}
+{"level":"info","caller":"C:/Users/serge/projects/course-service/cmd/app/main.go:79","time":"2026-04-11T21:10:26+03:00","message":"http server started at 0.0.0.0:10001"}
+{"level":"info","caller":"C:/Users/serge/projects/course-service/cmd/app/main.go:80","time":"2026-04-11T21:10:26+03:00","message":"course service started"}
+{"level":"info","caller":"C:/Users/serge/projects/course-service/cmd/app/main.go:84","time":"2026-04-11T21:12:08+03:00","message":"http server started at 0.0.0.0:10001"}
+{"level":"info","caller":"C:/Users/serge/projects/course-service/cmd/app/main.go:85","time":"2026-04-11T21:12:08+03:00","message":"course service started"}
+{"level":"info","caller":"C:/Users/serge/projects/course-service/cmd/app/main.go:90","time":"2026-04-11T21:16:14+03:00","message":"shutting down course service..."}
+{"level":"info","caller":"C:/Users/serge/projects/course-service/cmd/app/main.go:95","time":"2026-04-11T21:16:14+03:00","message":"postgres connection closed"}
+{"level":"info","caller":"C:/Users/serge/projects/course-service/cmd/app/main.go:100","time":"2026-04-11T21:16:14+03:00","message":"http server shutdown complete"}
+{"level":"info","caller":"C:/Users/serge/projects/course-service/cmd/app/main.go:102","time":"2026-04-11T21:16:14+03:00","message":"course service shutdown complete"}
+{"level":"info","caller":"C:/Users/serge/projects/course-service/cmd/app/main.go:84","time":"2026-04-11T21:16:16+03:00","message":"http server started at 0.0.0.0:10001"}
+{"level":"info","caller":"C:/Users/serge/projects/course-service/cmd/app/main.go:85","time":"2026-04-11T21:16:16+03:00","message":"course service started"}
+{"level":"info","caller":"C:/Users/serge/projects/course-service/cmd/app/main.go:90","time":"2026-04-11T21:52:34+03:00","message":"shutting down course service..."}
+{"level":"info","caller":"C:/Users/serge/projects/course-service/cmd/app/main.go:95","time":"2026-04-11T21:52:34+03:00","message":"postgres connection closed"}
+{"level":"info","caller":"C:/Users/serge/projects/course-service/cmd/app/main.go:100","time":"2026-04-11T21:52:34+03:00","message":"http server shutdown complete"}
+{"level":"info","caller":"C:/Users/serge/projects/course-service/cmd/app/main.go:102","time":"2026-04-11T21:52:34+03:00","message":"course service shutdown complete"}
+{"level":"info","caller":"C:/Users/serge/projects/course-service/cmd/app/main.go:90","time":"2026-04-13T19:25:46+03:00","message":"http server started at 0.0.0.0:10001"}
+{"level":"info","caller":"C:/Users/serge/projects/course-service/cmd/app/main.go:91","time":"2026-04-13T19:25:46+03:00","message":"course service started"}
+{"level":"info","caller":"C:/Users/serge/projects/course-service/cmd/app/main.go:96","time":"2026-04-13T19:37:27+03:00","message":"shutting down course service..."}
+{"level":"info","caller":"C:/Users/serge/projects/course-service/cmd/app/main.go:101","time":"2026-04-13T19:37:27+03:00","message":"postgres connection closed"}
+{"level":"info","caller":"C:/Users/serge/projects/course-service/cmd/app/main.go:106","time":"2026-04-13T19:37:28+03:00","message":"http server shutdown complete"}
+{"level":"info","caller":"C:/Users/serge/projects/course-service/cmd/app/main.go:108","time":"2026-04-13T19:37:28+03:00","message":"course service shutdown complete"}
+{"level":"info","caller":"C:/Users/serge/projects/course-service/cmd/app/main.go:90","time":"2026-04-13T19:37:30+03:00","message":"http server started at 0.0.0.0:10001"}
+{"level":"info","caller":"C:/Users/serge/projects/course-service/cmd/app/main.go:91","time":"2026-04-13T19:37:30+03:00","message":"course service started"}
+{"level":"info","caller":"C:/Users/serge/projects/course-service/cmd/app/main.go:96","time":"2026-04-13T19:43:49+03:00","message":"shutting down course service..."}
+{"level":"info","caller":"C:/Users/serge/projects/course-service/cmd/app/main.go:101","time":"2026-04-13T19:43:49+03:00","message":"postgres connection closed"}
+{"level":"info","caller":"C:/Users/serge/projects/course-service/cmd/app/main.go:106","time":"2026-04-13T19:43:49+03:00","message":"http server shutdown complete"}
+{"level":"info","caller":"C:/Users/serge/projects/course-service/cmd/app/main.go:108","time":"2026-04-13T19:43:49+03:00","message":"course service shutdown complete"}
+{"level":"info","caller":"C:/Users/serge/projects/course-service/cmd/app/main.go:90","time":"2026-04-13T19:44:02+03:00","message":"http server started at 0.0.0.0:10001"}
+{"level":"info","caller":"C:/Users/serge/projects/course-service/cmd/app/main.go:91","time":"2026-04-13T19:44:02+03:00","message":"course service started"}
+{"level":"info","caller":"C:/Users/serge/projects/course-service/cmd/app/main.go:96","time":"2026-04-13T19:45:01+03:00","message":"shutting down course service..."}
+{"level":"info","caller":"C:/Users/serge/projects/course-service/cmd/app/main.go:101","time":"2026-04-13T19:45:01+03:00","message":"postgres connection closed"}
+{"level":"info","caller":"C:/Users/serge/projects/course-service/cmd/app/main.go:106","time":"2026-04-13T19:45:01+03:00","message":"http server shutdown complete"}
+{"level":"info","caller":"C:/Users/serge/projects/course-service/cmd/app/main.go:108","time":"2026-04-13T19:45:01+03:00","message":"course service shutdown complete"}
+{"level":"info","caller":"C:/Users/serge/projects/course-service/cmd/app/main.go:90","time":"2026-04-13T19:45:04+03:00","message":"http server started at 0.0.0.0:10001"}
+{"level":"info","caller":"C:/Users/serge/projects/course-service/cmd/app/main.go:91","time":"2026-04-13T19:45:04+03:00","message":"course service started"}
+{"level":"info","caller":"C:/Users/serge/projects/course-service/cmd/app/main.go:96","time":"2026-04-13T19:45:36+03:00","message":"shutting down course service..."}
+{"level":"info","caller":"C:/Users/serge/projects/course-service/cmd/app/main.go:101","time":"2026-04-13T19:45:36+03:00","message":"postgres connection closed"}
+{"level":"info","caller":"C:/Users/serge/projects/course-service/cmd/app/main.go:106","time":"2026-04-13T19:45:36+03:00","message":"http server shutdown complete"}
+{"level":"info","caller":"C:/Users/serge/projects/course-service/cmd/app/main.go:108","time":"2026-04-13T19:45:36+03:00","message":"course service shutdown complete"}
+{"level":"info","caller":"C:/Users/serge/projects/course-service/cmd/app/main.go:85","time":"2026-05-17T22:10:56+03:00","message":"http server started at 0.0.0.0:10001"}
+{"level":"info","caller":"C:/Users/serge/projects/course-service/cmd/app/main.go:86","time":"2026-05-17T22:10:56+03:00","message":"course service started"}

@@ -3,12 +3,12 @@ package coursesectionitems
 import "course-service/internal/domain"
 
 type courseSectionItemModel struct {
-	ID          int64  `gorm:"primaryKey"`
-	SectionId   int64  `gorm:"column:section_id;not null"`
-	ItemType    string `gorm:"column:item_type;type:varchar(50);not null"`
-	Title       string `gorm:"column:title;type:varchar(255);not null"`
-	SortOrder   int    `gorm:"column:sort_order"`
-	IsPublished bool   `gorm:"column:is_published"`
+	ID          int64  `db:"id"`
+	SectionId   int64  `db:"section_id"`
+	ItemType    string `db:"item_type"`
+	Title       string `db:"title"`
+	SortOrder   int    `db:"sort_order"`
+	IsPublished bool   `db:"is_published"`
 }
 
 func (m courseSectionItemModel) toDomain() domain.CourseSectionItem {

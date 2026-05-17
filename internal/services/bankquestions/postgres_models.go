@@ -7,19 +7,19 @@ import (
 )
 
 type bankQuestionModel struct {
-	ID            int64     `gorm:"primaryKey"`
-	BankId        int64     `gorm:"column:bank_id;not null"`
-	QuestionText  string    `gorm:"column:question_text;type:text;not null"`
-	QuestionType  int16     `gorm:"column:question_type;not null"`
-	DefaultPoints int       `gorm:"column:default_points"`
-	CreatedAt     time.Time `gorm:"column:created_at;autoCreateTime"`
+	ID            int64     `db:"id"`
+	BankId        int64     `db:"bank_id"`
+	QuestionText  string    `db:"question_text"`
+	QuestionType  int16     `db:"question_type"`
+	DefaultPoints int       `db:"default_points"`
+	CreatedAt     time.Time `db:"created_at"`
 }
 
 type bankAnswerModel struct {
-	ID         int64  `gorm:"primaryKey"`
-	QuestionId int64  `gorm:"column:question_id;not null"`
-	AnswerText string `gorm:"column:answer_text;type:text;not null"`
-	IsCorrect  bool   `gorm:"column:is_correct;not null"`
+	ID         int64  `db:"id"`
+	QuestionId int64  `db:"question_id"`
+	AnswerText string `db:"answer_text"`
+	IsCorrect  bool   `db:"is_correct"`
 }
 
 func (q bankQuestionModel) toDomain(answers []bankAnswerModel) domain.BankQuestion {

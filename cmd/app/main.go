@@ -1,22 +1,20 @@
 package main
 
 import (
+	"context"
 	"os"
 	"os/signal"
 	"syscall"
+	"time"
 
-	"course-service/internal/repository/bankquestions"
-	"course-service/internal/repository/banks"
-	"course-service/internal/repository/courses"
-	"course-service/internal/repository/coursesectionitems"
-	"course-service/internal/repository/coursesections"
+	assignmentservice "course-service/internal/services/assignments"
 	bankquestionsservice "course-service/internal/services/bankquestions"
 	banksservice "course-service/internal/services/banks"
 	coursesservice "course-service/internal/services/courses"
 	coursesectionitemsservice "course-service/internal/services/coursesectionitems"
 	coursesectionsservice "course-service/internal/services/coursesections"
+	testsservice "course-service/internal/services/tests"
 	"course-service/internal/transport/http"
-	"course-service/pkg/gorm"
 	"course-service/pkg/logger"
 	"course-service/pkg/postgres"
 
@@ -53,22 +51,17 @@ func main() {
 		log.Fatal().Err(err).Msg("failed to connect to postgres")
 	}
 
-	gormDb, err := gorm.New(postgresConn)
-	if err != nil {
-		log.Fatal().Err(err).Msg("failed to create orm")
-	}
+	coursesService := coursesservice.NewService(coursesservice.NewRepository(postgresConn), log)
+	courseSectionsService := coursesectionsservice.NewService(coursesectionsservice.NewRepository(postgresConn), log)
+	courseSectionItemsService := coursesectionitemsservice.NewService(coursesectionitemsservice.NewRepository(postgresConn), log)
+	banksService := banksservice.NewService(banksservice.NewRepository(postgresConn), log)
+	bankQuestionsService := bankquestionsservice.NewService(bankquestionsservice.NewRepository(postgresConn), log)
+	assignmentsService := assignmentservice.NewService(assignmentservice.NewRepository(postgresConn), log)
+	testsService := testsservice.NewService(testsservice.NewRepository(postgresConn), log)
 
-	coursesRepo := courses.NewPostgresRepo(gormDb)
-	courseSectionsRepo := coursesections.NewPostgresRepo(gormDb)
-	courseSectionsItemsRepo := coursesectionitems.NewPostgresRepo(gormDb)
-	banksRepo := banks.NewPostgresRepo(gormDb)
-	bankQuestionsRepo := bankquestions.NewPostgresRepo(gormDb)
-
-	coursesService := coursesservice.NewService(coursesRepo, log)
-	courseSectionsService := coursesectionsservice.NewService(courseSectionsRepo, log)
-	courseSectionItemsService := coursesectionitemsservice.NewService(courseSectionsItemsRepo, log)
-	banksService := banksservice.NewService(banksRepo, log)
-	bankQuestionsService := bankquestionsservice.NewService(bankQuestionsRepo, log)
+	appCtx, cancel := context.WithCancel(context.Background())
+	defer cancel()
+	go testsService.RunExpiredAttemptsWorker(appCtx, time.Minute)
 
 	httpServer := http.NewServer(http.Config{
 		Addr:                      cfg.HTTPServer.Addr,
@@ -79,6 +72,8 @@ func main() {
 		CourseSectionItemsService: courseSectionItemsService,
 		BanksService:              banksService,
 		BankQuestionsService:      bankQuestionsService,
+		AssignmentsService:        assignmentsService,
+		TestsService:              testsService,
 	})
 
 	go func() {
@@ -93,6 +88,7 @@ func main() {
 	quit := make(chan os.Signal, 1)
 	signal.Notify(quit, os.Interrupt, syscall.SIGINT, syscall.SIGKILL)
 	<-quit
+	cancel()
 	log.Info().Msg("shutting down course service...")
 
 	if err = postgresConn.Close(); err != nil {

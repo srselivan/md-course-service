@@ -10,7 +10,7 @@ import (
 	"course-service/internal/services/courses"
 	"course-service/internal/services/coursesectionitems"
 	"course-service/internal/services/coursesections"
-	"course-service/internal/services/lectures"
+	testsservice "course-service/internal/services/tests"
 
 	"github.com/rs/zerolog"
 )
@@ -46,14 +46,6 @@ type CourseSectionItemsService interface {
 	GetList(ctx context.Context, params coursesectionitems.GetListServiceParams) ([]domain.CourseSectionItem, error)
 }
 
-type LecturesService interface {
-	Create(ctx context.Context, params lectures.CreateServiceParams) (domain.Lecture, error)
-	Update(ctx context.Context, params lectures.UpdateServiceParams) (domain.Lecture, error)
-	Delete(ctx context.Context, itemId int64) error
-	Get(ctx context.Context, itemId int64) (domain.Lecture, error)
-	GetList(ctx context.Context, params lectures.GetListServiceParams) ([]domain.Lecture, error)
-}
-
 type AssignmentsService interface {
 	Create(ctx context.Context, params assignments.CreateServiceParams) (domain.Assignment, error)
 	Update(ctx context.Context, params assignments.UpdateServiceParams) (domain.Assignment, error)
@@ -77,15 +69,29 @@ type BankQuestionsService interface {
 	GetList(ctx context.Context, params bankquestions.GetListServiceParams) ([]domain.BankQuestion, error)
 }
 
+type TestsService interface {
+	Create(ctx context.Context, params testsservice.CreateServiceParams) (domain.Test, error)
+	Update(ctx context.Context, params testsservice.UpdateServiceParams) (domain.Test, error)
+	Delete(ctx context.Context, id int64) error
+	GetList(ctx context.Context, courseID *int64) ([]domain.Test, error)
+	GetInfo(ctx context.Context, testID, userID int64) (domain.TestWithAttempts, error)
+	GetAttempts(ctx context.Context, params testsservice.GetAttemptsServiceParams) ([]domain.TestAttempt, error)
+	StartAttempt(ctx context.Context, params testsservice.StartAttemptServiceParams) (domain.AttemptState, error)
+	GetAttemptState(ctx context.Context, params testsservice.GetAttemptStateServiceParams) (domain.AttemptState, error)
+	SaveAnswer(ctx context.Context, params testsservice.SaveAnswerServiceParams) error
+	SubmitAttempt(ctx context.Context, attemptID int64) (domain.TestAttempt, error)
+	GradeAttempt(ctx context.Context, params testsservice.GradeAttemptServiceParams) (domain.TestAttempt, error)
+}
+
 type Config struct {
 	CoursesService            CoursesService
 	CourseListenersService    CourseListenersService
 	CourseSectionsService     CourseSectionsService
 	CourseSectionItemsService CourseSectionItemsService
-	LecturesService           LecturesService
 	AssignmentsService        AssignmentsService
 	BanksService              BanksService
 	BankQuestionsService      BankQuestionsService
+	TestsService              TestsService
 	Logger                    *zerolog.Logger
 }
 
@@ -94,10 +100,10 @@ type Handler struct {
 	courseListenersService    CourseListenersService
 	courseSectionsService     CourseSectionsService
 	courseSectionItemsService CourseSectionItemsService
-	lecturesService           LecturesService
 	assignmentsService        AssignmentsService
 	banksService              BanksService
 	bankQuestionsService      BankQuestionsService
+	testsService              TestsService
 
 	logger *zerolog.Logger
 }
@@ -108,10 +114,10 @@ func NewHandler(config Config) *Handler {
 		courseListenersService:    config.CourseListenersService,
 		courseSectionsService:     config.CourseSectionsService,
 		courseSectionItemsService: config.CourseSectionItemsService,
-		lecturesService:           config.LecturesService,
 		assignmentsService:        config.AssignmentsService,
 		banksService:              config.BanksService,
 		bankQuestionsService:      config.BankQuestionsService,
+		testsService:              config.TestsService,
 		logger:                    config.Logger,
 	}
 }
