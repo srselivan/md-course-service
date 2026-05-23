@@ -2,41 +2,53 @@ package courses
 
 type (
 	CreateRepoParams struct {
-		Title       string
-		Description *string
-		OwnerUserId int64
+		Title        string
+		Description  *string
+		OwnerUserId  int64
+		CoverImageId *string
 	}
 	UpdateRepoParams struct {
-		ID          int64
-		Title       string
-		Description *string
-		OwnerUserId int64
-		Status      int16
+		ID           int64
+		Title        string
+		Description  *string
+		OwnerUserId  int64
+		Status       int16
+		CoverImageId *string
 	}
 	GetListRepoParams struct {
 		Status      *int16
 		UserID      *int64
 		OwnerUserId *int64
+		Filter      *string
+	}
+	GetStatsRepoParams struct {
+		OwnerUserId int64
 	}
 )
 
 type (
 	CreateServiceParams struct {
-		Title       string
-		Description *string
-		OwnerUserId int64
+		Title        string
+		Description  *string
+		OwnerUserId  int64
+		CoverImageId *string
 	}
 	UpdateServiceParams struct {
-		ID          int64
-		Title       string
-		Description *string
-		OwnerUserId int64
-		Status      int16
+		ID           int64
+		Title        string
+		Description  *string
+		OwnerUserId  int64
+		Status       int16
+		CoverImageId *string
 	}
 	GetListServiceParams struct {
 		Status      *int16
 		UserID      *int64
 		OwnerUserId *int64
+		Filter      *string
+	}
+	GetStatsServiceParams struct {
+		OwnerUserId int64
 	}
 	GetWithAllItemsParams struct {
 		Id     int64

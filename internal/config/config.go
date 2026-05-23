@@ -11,6 +11,7 @@ type Config struct {
 	Logger     LoggerConfig
 	Postgres   PostgresConfig
 	HTTPServer HTTPServerConfig
+	Kafka      KafkaConfig
 }
 
 type LoggerConfig struct {
@@ -29,6 +30,10 @@ type PostgresConfig struct {
 
 type HTTPServerConfig struct {
 	Addr string `env:"HTTP_SERVER_ADDR,required"`
+}
+
+type KafkaConfig struct {
+	Brokers []string `env:"KAFKA_BROKERS" envSeparator:","`
 }
 
 func Load() (*Config, error) {

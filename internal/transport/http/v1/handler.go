@@ -21,6 +21,7 @@ type CoursesService interface {
 	Delete(ctx context.Context, id int64) error
 	Get(ctx context.Context, id int64) (domain.Course, error)
 	GetList(ctx context.Context, params courses.GetListServiceParams) ([]domain.Course, error)
+	GetStats(ctx context.Context, params courses.GetStatsServiceParams) (domain.CoursesStatsResponse, error)
 	GetWithAllItems(ctx context.Context, params courses.GetWithAllItemsParams) (domain.CourseWithItems, error)
 }
 
@@ -64,9 +65,10 @@ type BanksService interface {
 type BankQuestionsService interface {
 	Create(ctx context.Context, params bankquestions.CreateServiceParams) (domain.BankQuestion, error)
 	Update(ctx context.Context, params bankquestions.UpdateServiceParams) (domain.BankQuestion, error)
+	Delete(ctx context.Context, id int64) error
 	BulkCreate(ctx context.Context, params bankquestions.BulkCreateServiceParams) error
 	BulkUpdate(ctx context.Context, params bankquestions.BulkUpdateServiceParams) error
-	GetList(ctx context.Context, params bankquestions.GetListServiceParams) ([]domain.BankQuestion, error)
+	GetList(ctx context.Context, params bankquestions.GetListServiceParams) (domain.BankQuestionsListResponse, error)
 }
 
 type TestsService interface {
@@ -80,6 +82,7 @@ type TestsService interface {
 	GetAttemptState(ctx context.Context, params testsservice.GetAttemptStateServiceParams) (domain.AttemptState, error)
 	SaveAnswer(ctx context.Context, params testsservice.SaveAnswerServiceParams) error
 	SubmitAttempt(ctx context.Context, attemptID int64) (domain.TestAttempt, error)
+	SubmitWithAnswers(ctx context.Context, params testsservice.SubmitWithAnswersServiceParams) (domain.TestAttempt, error)
 	GradeAttempt(ctx context.Context, params testsservice.GradeAttemptServiceParams) (domain.TestAttempt, error)
 }
 

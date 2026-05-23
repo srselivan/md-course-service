@@ -5,6 +5,7 @@ import (
 	"database/sql"
 	"errors"
 	"fmt"
+	"strings"
 
 	"course-service/internal/domain"
 	"course-service/internal/repository"
@@ -24,7 +25,7 @@ func NewRepository(db *sqlx.DB) *Repository {
 func (r *Repository) Create(ctx context.Context, params CreateRepoParams) (domain.BankQuestion, error) {
 	var question domain.BankQuestion
 	err := repository.WithTx(ctx, r.db, func(tx *sqlx.Tx) error {
-		q, err := insertBankQuestion(ctx, tx, params.BankId, params.QuestionText, params.QuestionType, params.DefaultPoints)
+		q, err := insertBankQuestion(ctx, tx, params.BankId, params.Text, params.Type, params.Points)
 		if err != nil {
 			return err
 		}
@@ -44,7 +45,7 @@ func (r *Repository) Create(ctx context.Context, params CreateRepoParams) (domai
 func (r *Repository) BulkCreate(ctx context.Context, params BulkCreateRepoParams) error {
 	return repository.WithTx(ctx, r.db, func(tx *sqlx.Tx) error {
 		for _, q := range params.Questions {
-			model, err := insertBankQuestion(ctx, tx, q.BankId, q.QuestionText, q.QuestionType, q.DefaultPoints)
+			model, err := insertBankQuestion(ctx, tx, q.BankId, q.Text, q.Type, q.Points)
 			if err != nil {
 				return err
 			}
@@ -63,17 +64,17 @@ func (r *Repository) Update(ctx context.Context, params UpdateRepoParams) (domai
 			updateQuestionQuery = `
 				update bank_question
 				set bank_id = $2,
-					question_text = $3,
-					question_type = $4,
-					default_points = $5
+					text = $3,
+					type = $4,
+					points = $5
 				where id = $1
-				returning id, bank_id, question_text, question_type, default_points, created_at`
+				returning id, bank_id, text, type, points, created_at`
 			deleteAnswersQuery = `delete from bank_answers where question_id = $1`
 		)
 
 		var q bankQuestionModel
 		if err := tx.GetContext(ctx, &q, updateQuestionQuery,
-			params.ID, params.BankId, params.QuestionText, int16(params.QuestionType), params.DefaultPoints); err != nil {
+			params.ID, params.BankId, params.Text, string(params.Type), params.Points); err != nil {
 			if errors.Is(err, sql.ErrNoRows) {
 				return repository.ErrNotFound
 			}
@@ -106,7 +107,7 @@ func (r *Repository) BulkUpdate(ctx context.Context, params BulkUpdateRepoParams
 		}
 
 		for _, q := range params.Questions {
-			model, err := insertBankQuestion(ctx, tx, q.BankId, q.QuestionText, q.QuestionType, q.DefaultPoints)
+			model, err := insertBankQuestion(ctx, tx, q.BankId, q.Text, q.Type, q.Points)
 			if err != nil {
 				return err
 			}
@@ -118,37 +119,42 @@ func (r *Repository) BulkUpdate(ctx context.Context, params BulkUpdateRepoParams
 	})
 }
 
-func (r *Repository) GetList(ctx context.Context, params GetListRepoParams) ([]domain.BankQuestion, error) {
+func (r *Repository) GetList(ctx context.Context, params GetListRepoParams) (GetListRepoResult, error) {
 	const (
-		listByBankQuery = `
-			select id, bank_id, question_text, question_type, default_points, created_at
-			from bank_question
-			where bank_id = $1
-			order by id`
-		listAllQuery = `
-			select id, bank_id, question_text, question_type, default_points, created_at
-			from bank_question
-			order by id`
-		listAnswersQuery = `
-			select id, question_id, answer_text, is_correct
+		listQuestionsBaseQuery = `
+			select id, bank_id, text, type, points, created_at
+			from bank_question`
+		countQuestionsBaseQuery = `select count(*) from bank_question`
+		listAnswersQuery        = `
+			select id, question_id, text, is_correct
 			from bank_answers
 			where question_id = any($1)
 			order by id`
 	)
 
-	var questions []bankQuestionModel
-	var err error
-	if params.BankId != nil {
-		err = r.db.SelectContext(ctx, &questions, listByBankQuery, *params.BankId)
-	} else {
-		err = r.db.SelectContext(ctx, &questions, listAllQuery)
+	whereClause, args := buildListQuestionsFilter(params)
+	countQuery := countQuestionsBaseQuery + whereClause
+	listQuery := listQuestionsBaseQuery + whereClause + " order by id"
+
+	argNum := len(args)
+	listQuery += fmt.Sprintf(" limit $%d offset $%d", argNum+1, argNum+2)
+	listArgs := append(append([]any{}, args...), params.Limit, params.Offset)
+
+	var total int64
+	if err := r.db.GetContext(ctx, &total, countQuery, args...); err != nil {
+		return GetListRepoResult{}, fmt.Errorf("count questions: %w", err)
 	}
-	if err != nil {
-		return nil, fmt.Errorf("list questions: %w", err)
+
+	var questions []bankQuestionModel
+	if err := r.db.SelectContext(ctx, &questions, listQuery, listArgs...); err != nil {
+		return GetListRepoResult{}, fmt.Errorf("list questions: %w", err)
 	}
 
 	if len(questions) == 0 {
-		return []domain.BankQuestion{}, nil
+		return GetListRepoResult{
+			Items: []domain.BankQuestion{},
+			Total: total,
+		}, nil
 	}
 
 	ids := make([]int64, 0, len(questions))
@@ -158,7 +164,7 @@ func (r *Repository) GetList(ctx context.Context, params GetListRepoParams) ([]d
 
 	var answers []bankAnswerModel
 	if err := r.db.SelectContext(ctx, &answers, listAnswersQuery, pq.Array(ids)); err != nil {
-		return nil, fmt.Errorf("list answers: %w", err)
+		return GetListRepoResult{}, fmt.Errorf("list answers: %w", err)
 	}
 
 	answersByQuestion := make(map[int64][]bankAnswerModel, len(questions))
@@ -170,24 +176,70 @@ func (r *Repository) GetList(ctx context.Context, params GetListRepoParams) ([]d
 	for _, q := range questions {
 		result = append(result, q.toDomain(answersByQuestion[q.ID]))
 	}
-	return result, nil
+
+	return GetListRepoResult{
+		Items: result,
+		Total: total,
+	}, nil
+}
+
+func buildListQuestionsFilter(params GetListRepoParams) (string, []any) {
+	var (
+		conds  []string
+		args   []any
+		argNum int
+	)
+
+	argNum++
+	conds = append(conds, fmt.Sprintf("bank_id = $%d", argNum))
+	args = append(args, params.BankId)
+
+	if params.Type != nil && *params.Type != "" {
+		argNum++
+		conds = append(conds, fmt.Sprintf("type = $%d", argNum))
+		args = append(args, *params.Type)
+	}
+	if params.Filter != nil && *params.Filter != "" {
+		argNum++
+		conds = append(conds, fmt.Sprintf("text ilike $%d", argNum))
+		args = append(args, "%"+*params.Filter+"%")
+	}
+
+	return " where " + strings.Join(conds, " and "), args
+}
+
+func (r *Repository) Delete(ctx context.Context, id int64) error {
+	const query = `delete from bank_question where id = $1`
+
+	result, err := r.db.ExecContext(ctx, query, id)
+	if err != nil {
+		return fmt.Errorf("delete question: %w", err)
+	}
+	rows, err := result.RowsAffected()
+	if err != nil {
+		return fmt.Errorf("delete rows affected: %w", err)
+	}
+	if rows == 0 {
+		return repository.ErrNotFound
+	}
+	return nil
 }
 
 func insertBankQuestion(
 	ctx context.Context,
 	tx *sqlx.Tx,
 	bankID int64,
-	questionText string,
-	questionType domain.QuestionType,
-	defaultPoints int,
+	text string,
+	questionType domain.TestingQuestionType,
+	points int,
 ) (bankQuestionModel, error) {
 	const query = `
-		insert into bank_question (bank_id, question_text, question_type, default_points)
+		insert into bank_question (bank_id, text, type, points)
 		values ($1, $2, $3, $4)
-		returning id, bank_id, question_text, question_type, default_points, created_at`
+		returning id, bank_id, text, type, points, created_at`
 
 	var model bankQuestionModel
-	if err := tx.GetContext(ctx, &model, query, bankID, questionText, int16(questionType), defaultPoints); err != nil {
+	if err := tx.GetContext(ctx, &model, query, bankID, text, string(questionType), points); err != nil {
 		return bankQuestionModel{}, fmt.Errorf("insert question: %w", err)
 	}
 	return model, nil
@@ -195,9 +247,9 @@ func insertBankQuestion(
 
 func insertAnswers(ctx context.Context, tx *sqlx.Tx, questionID int64, answers []BankAnswerDTO) ([]bankAnswerModel, error) {
 	const query = `
-		insert into bank_answers (question_id, answer_text, is_correct)
+		insert into bank_answers (question_id, text, is_correct)
 		values ($1, $2, $3)
-		returning id, question_id, answer_text, is_correct`
+		returning id, question_id, text, is_correct`
 
 	if len(answers) == 0 {
 		return nil, nil
@@ -206,7 +258,7 @@ func insertAnswers(ctx context.Context, tx *sqlx.Tx, questionID int64, answers [
 	inserted := make([]bankAnswerModel, 0, len(answers))
 	for _, a := range answers {
 		var model bankAnswerModel
-		if err := tx.GetContext(ctx, &model, query, questionID, a.AnswerText, a.IsCorrect); err != nil {
+		if err := tx.GetContext(ctx, &model, query, questionID, a.Text, a.IsCorrect); err != nil {
 			return nil, fmt.Errorf("insert answer: %w", err)
 		}
 		inserted = append(inserted, model)

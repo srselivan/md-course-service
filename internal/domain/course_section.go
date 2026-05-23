@@ -2,8 +2,8 @@ package domain
 
 type CourseSection struct {
 	ID        int64  `json:"id"`
-	CourseId  int64  `json:"course_id"`
-	ParentId  *int64 `json:"parent_id"`
+	CourseId  int64  `json:"courseId"`
+	ParentId  *int64 `json:"parentId"`
 	Title     string `json:"title"`
-	SortOrder int    `json:"sort_order"`
+	SortOrder int    `json:"sortOrder"`
 }

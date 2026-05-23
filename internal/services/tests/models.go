@@ -7,33 +7,33 @@ import (
 
 type (
 	CreateRepoParams struct {
-		CourseID           int64
-		CourseSectionID    int64
-		Title              string
-		Description        string
-		AvailableFrom      time.Time
-		AvailableTo        time.Time
-		DurationSeconds    int64
-		MaxAttempts        int
-		MaxScore           int
-		QuestionsCount     int
-		GenerationSettings domain.JSONB
-		BankIDs            []int64
+		CourseID            int64
+		CourseSectionItemID int64
+		Title               string
+		Description         string
+		AvailableFrom       time.Time
+		AvailableTo         time.Time
+		DurationSeconds     int64
+		MaxAttempts         int
+		MaxScore            int
+		QuestionsCount      int
+		GenerationSettings  domain.JSONB
+		BankIDs             []int64
 	}
 	UpdateRepoParams struct {
-		ID                 int64
-		CourseID           int64
-		CourseSectionID    int64
-		Title              string
-		Description        string
-		AvailableFrom      time.Time
-		AvailableTo        time.Time
-		DurationSeconds    int64
-		MaxAttempts        int
-		MaxScore           int
-		QuestionsCount     int
-		GenerationSettings domain.JSONB
-		BankIDs            []int64
+		ID                  int64
+		CourseID            int64
+		CourseSectionItemID int64
+		Title               string
+		Description         string
+		AvailableFrom       time.Time
+		AvailableTo         time.Time
+		DurationSeconds     int64
+		MaxAttempts         int
+		MaxScore            int
+		QuestionsCount      int
+		GenerationSettings  domain.JSONB
+		BankIDs             []int64
 	}
 	SelectBankQuestionIDsRepoParams struct {
 		TestID           int64
@@ -91,33 +91,33 @@ type (
 
 type (
 	CreateServiceParams struct {
-		CourseID           int64
-		CourseSectionID    int64
-		Title              string
-		Description        string
-		AvailableFrom      time.Time
-		AvailableTo        time.Time
-		DurationSeconds    int64
-		MaxAttempts        int
-		MaxScore           int
-		QuestionsCount     int
-		GenerationSettings domain.JSONB
-		BankIDs            []int64
+		CourseID            int64
+		CourseSectionItemID int64
+		Title               string
+		Description         string
+		AvailableFrom       time.Time
+		AvailableTo         time.Time
+		DurationSeconds     int64
+		MaxAttempts         int
+		MaxScore            int
+		QuestionsCount      int
+		GenerationSettings  domain.JSONB
+		BankIDs             []int64
 	}
 	UpdateServiceParams struct {
-		ID                 int64
-		CourseID           int64
-		CourseSectionID    int64
-		Title              string
-		Description        string
-		AvailableFrom      time.Time
-		AvailableTo        time.Time
-		DurationSeconds    int64
-		MaxAttempts        int
-		MaxScore           int
-		QuestionsCount     int
-		GenerationSettings domain.JSONB
-		BankIDs            []int64
+		ID                  int64
+		CourseID            int64
+		CourseSectionItemID int64
+		Title               string
+		Description         string
+		AvailableFrom       time.Time
+		AvailableTo         time.Time
+		DurationSeconds     int64
+		MaxAttempts         int
+		MaxScore            int
+		QuestionsCount      int
+		GenerationSettings  domain.JSONB
+		BankIDs             []int64
 	}
 	StartAttemptServiceParams struct {
 		TestID int64
@@ -135,6 +135,10 @@ type (
 		AttemptQuestionID int64
 		SelectedAnswerIDs []int64
 		TextResponse      *string
+	}
+	SubmitWithAnswersServiceParams struct {
+		AttemptID int64
+		Answers   []SaveAnswerServiceParams
 	}
 	GradeAttemptServiceParams struct {
 		AttemptID int64

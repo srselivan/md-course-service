@@ -16,7 +16,8 @@ type bankQuestionsRepo interface {
 	BulkCreate(ctx context.Context, params BulkCreateRepoParams) error
 	Update(ctx context.Context, params UpdateRepoParams) (domain.BankQuestion, error)
 	BulkUpdate(ctx context.Context, params BulkUpdateRepoParams) error
-	GetList(ctx context.Context, params GetListRepoParams) ([]domain.BankQuestion, error)
+	Delete(ctx context.Context, id int64) error
+	GetList(ctx context.Context, params GetListRepoParams) (GetListRepoResult, error)
 }
 
 type Service struct {
@@ -33,11 +34,11 @@ func NewService(repo bankQuestionsRepo, logger *zerolog.Logger) *Service {
 
 func (s *Service) Create(ctx context.Context, params CreateServiceParams) (domain.BankQuestion, error) {
 	question, err := s.repo.Create(ctx, CreateRepoParams{
-		QuestionText:  params.QuestionText,
-		QuestionType:  params.QuestionType,
-		DefaultPoints: params.DefaultPoints,
-		BankId:        params.BankId,
-		Answers:       params.Answers,
+		Text:    params.Text,
+		Type:    params.Type,
+		Points:  params.Points,
+		BankId:  params.BankId,
+		Answers: params.Answers,
 	})
 	if err != nil {
 		return domain.BankQuestion{}, fmt.Errorf("repo.Create: %w", err)
@@ -49,11 +50,11 @@ func (s *Service) BulkCreate(ctx context.Context, params BulkCreateServiceParams
 	if err := s.repo.BulkCreate(ctx, BulkCreateRepoParams{
 		Questions: lo.Map(params.Questions, func(item CreateServiceParams, _ int) CreateRepoParams {
 			return CreateRepoParams{
-				QuestionText:  item.QuestionText,
-				QuestionType:  item.QuestionType,
-				DefaultPoints: item.DefaultPoints,
-				BankId:        item.BankId,
-				Answers:       item.Answers,
+				Text:    item.Text,
+				Type:    item.Type,
+				Points:  item.Points,
+				BankId:  item.BankId,
+				Answers: item.Answers,
 			}
 		}),
 	}); err != nil {
@@ -64,12 +65,12 @@ func (s *Service) BulkCreate(ctx context.Context, params BulkCreateServiceParams
 
 func (s *Service) Update(ctx context.Context, params UpdateServiceParams) (domain.BankQuestion, error) {
 	question, err := s.repo.Update(ctx, UpdateRepoParams{
-		ID:            params.ID,
-		QuestionText:  params.QuestionText,
-		QuestionType:  params.QuestionType,
-		DefaultPoints: params.DefaultPoints,
-		BankId:        params.BankId,
-		Answers:       params.Answers,
+		ID:      params.ID,
+		Text:    params.Text,
+		Type:    params.Type,
+		Points:  params.Points,
+		BankId:  params.BankId,
+		Answers: params.Answers,
 	})
 	if err != nil {
 		return domain.BankQuestion{}, fmt.Errorf("repo.Update: %w", err)
@@ -82,11 +83,11 @@ func (s *Service) BulkUpdate(ctx context.Context, params BulkUpdateServiceParams
 		Id: params.Id,
 		Questions: lo.Map(params.Questions, func(item UpdateServiceParams, _ int) UpdateRepoParams {
 			return UpdateRepoParams{
-				QuestionText:  item.QuestionText,
-				QuestionType:  item.QuestionType,
-				DefaultPoints: item.DefaultPoints,
-				BankId:        item.BankId,
-				Answers:       item.Answers,
+				Text:    item.Text,
+				Type:    item.Type,
+				Points:  item.Points,
+				BankId:  item.BankId,
+				Answers: item.Answers,
 			}
 		}),
 	}); err != nil {
@@ -95,12 +96,30 @@ func (s *Service) BulkUpdate(ctx context.Context, params BulkUpdateServiceParams
 	return nil
 }
 
-func (s *Service) GetList(ctx context.Context, params GetListServiceParams) ([]domain.BankQuestion, error) {
-	list, err := s.repo.GetList(ctx, GetListRepoParams{
+func (s *Service) GetList(ctx context.Context, params GetListServiceParams) (domain.BankQuestionsListResponse, error) {
+	result, err := s.repo.GetList(ctx, GetListRepoParams{
 		BankId: params.BankId,
+		Limit:  params.Limit,
+		Offset: params.Offset,
+		Type:   params.Type,
+		Filter: params.Filter,
 	})
 	if err != nil {
-		return nil, fmt.Errorf("repo.GetList: %w", err)
+		return domain.BankQuestionsListResponse{}, fmt.Errorf("repo.GetList: %w", err)
 	}
-	return list, nil
+	return domain.BankQuestionsListResponse{
+		Meta: domain.BankQuestionsListMeta{
+			Total:  result.Total,
+			Limit:  params.Limit,
+			Offset: params.Offset,
+		},
+		Data: result.Items,
+	}, nil
+}
+
+func (s *Service) Delete(ctx context.Context, id int64) error {
+	if err := s.repo.Delete(ctx, id); err != nil {
+		return fmt.Errorf("repo.Delete: %w", err)
+	}
+	return nil
 }

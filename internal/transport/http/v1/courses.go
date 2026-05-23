@@ -16,9 +16,10 @@ import (
 func (h *Handler) NewCoursesRoutes(router fiber.Router) {
 	coursesGroup := router.Group("courses")
 
+	coursesGroup.Get("/", h.getCoursesList)
+	coursesGroup.Get("/stats", h.getCoursesStats)
 	coursesGroup.Post("/", h.createCourse)
 	coursesGroup.Put("/:id", h.updateCourse)
-	coursesGroup.Delete("/:id", h.deleteCourse)
 	coursesGroup.Get("/:id", h.getCourse)
 
 	coursesGroup.Post("/:course_id/listeners", h.setCourseListeners)
@@ -30,15 +31,16 @@ func (h *Handler) NewCoursesRoutes(router fiber.Router) {
 
 // createCourse godoc
 //
-//	@Summary	Create course
-//	@Tags		courses
-//	@Accept		json
-//	@Produce	json
-//	@Param		body	body		request.CreateCourse	true	"Course"
-//	@Success	201		{object}	domain.Course
-//	@Failure	400		{object}	ErrorResponse
-//	@Failure	500		{object}	ErrorResponse
-//	@Router		/courses [post]
+//	@Summary		Create course
+//	@Description	Creates a course with status Draft (0). If coverImageId is set, publishes FileLoadedEvent to Kafka (file-topic).
+//	@Tags			courses
+//	@Accept			json
+//	@Produce		json
+//	@Param			body	body		request.CreateCourse	true	"Course"
+//	@Success		201		{object}	domain.Course
+//	@Failure		400		{object}	ErrorResponse
+//	@Failure		500		{object}	ErrorResponse
+//	@Router			/courses [post]
 func (h *Handler) createCourse(ctx fiber.Ctx) error {
 	var req request.CreateCourse
 	if err := json.Unmarshal(ctx.Body(), &req); err != nil {
@@ -46,9 +48,10 @@ func (h *Handler) createCourse(ctx fiber.Ctx) error {
 	}
 
 	course, err := h.coursesService.Create(ctx.Context(), courses.CreateServiceParams{
-		Title:       req.Title,
-		Description: req.Description,
-		OwnerUserId: req.OwnerUserId,
+		Title:        req.Title,
+		Description:  req.Description,
+		OwnerUserId:  req.OwnerUserId,
+		CoverImageId: req.CoverImageId,
 	})
 	if err != nil {
 		return fiber.NewError(fiber.StatusInternalServerError, err.Error())
@@ -68,16 +71,17 @@ func (h *Handler) createCourse(ctx fiber.Ctx) error {
 
 // updateCourse godoc
 //
-//	@Summary	Update course
-//	@Tags		courses
-//	@Accept		json
-//	@Produce	json
-//	@Param		id		path		int						true	"Course ID"
-//	@Param		body	body		request.UpdateCourse	true	"Course"
-//	@Success	200		{object}	domain.Course
-//	@Failure	400		{object}	ErrorResponse
-//	@Failure	500		{object}	ErrorResponse
-//	@Router		/courses/{id} [put]
+//	@Summary		Update course
+//	@Description	Updates course fields. When coverImageId changes, emits FileLoadedEvent and/or FileDeletedEvent to Kafka.
+//	@Tags			courses
+//	@Accept			json
+//	@Produce		json
+//	@Param			id		path		int						true	"Course ID"
+//	@Param			body	body		request.UpdateCourse	true	"Course"
+//	@Success		200		{object}	domain.Course
+//	@Failure		400		{object}	ErrorResponse
+//	@Failure		500		{object}	ErrorResponse
+//	@Router			/courses/{id} [put]
 func (h *Handler) updateCourse(ctx fiber.Ctx) error {
 	id, err := utils.GetInt64Param(ctx, "id")
 	if err != nil {
@@ -90,11 +94,12 @@ func (h *Handler) updateCourse(ctx fiber.Ctx) error {
 	}
 
 	course, err := h.coursesService.Update(ctx.Context(), courses.UpdateServiceParams{
-		ID:          id,
-		Title:       req.Title,
-		Description: req.Description,
-		OwnerUserId: req.OwnerUserId,
-		Status:      req.Status,
+		ID:           id,
+		Title:        req.Title,
+		Description:  req.Description,
+		OwnerUserId:  req.OwnerUserId,
+		Status:       req.Status,
+		CoverImageId: req.CoverImageId,
 	})
 	if err != nil {
 		return fiber.NewError(fiber.StatusInternalServerError, err.Error())
@@ -140,14 +145,14 @@ func (h *Handler) deleteCourse(ctx fiber.Ctx) error {
 
 // getCourse godoc
 //
-//	@Summary	Get course by ID
-//	@Tags		courses
-//	@Produce	json
-//	@Param		id	path		int	true	"Course ID"
-//	@Success	200	{object}	domain.Course
-//	@Failure	400	{object}	ErrorResponse
-//	@Failure	500	{object}	ErrorResponse
-//	@Router		/courses/{id} [get]
+//	@Summary		Get course by ID
+//	@Tags			courses
+//	@Produce		json
+//	@Param			id	path		int	true	"Course ID"
+//	@Success		200	{object}	domain.Course
+//	@Failure		400	{object}	ErrorResponse
+//	@Failure		500	{object}	ErrorResponse
+//	@Router			/courses/{id} [get]
 func (h *Handler) getCourse(ctx fiber.Ctx) error {
 	id, err := utils.GetInt64Param(ctx, "id")
 	if err != nil {
@@ -171,29 +176,32 @@ func (h *Handler) getCourse(ctx fiber.Ctx) error {
 	return nil
 }
 
+// getCoursesList godoc
+//
+//	@Summary		List instructor courses
+//	@Description	Returns courses owned by user_id. Filter: if the value is numeric, matches course id; otherwise matches title (case-insensitive substring). Student count is in stats.totalStudents.
+//	@Tags			courses
+//	@Produce		json
+//	@Param			user_id	query		int		true	"Instructor user ID (until JWT auth)"
+//	@Param			role	query		string	false	"User role (reserved for future auth)"
+//	@Param			filter	query		string	false	"Filter by course id or title"
+//	@Success		200		{array}		domain.Course
+//	@Failure		400		{object}	ErrorResponse
+//	@Failure		500		{object}	ErrorResponse
+//	@Router			/courses [get]
 func (h *Handler) getCoursesList(ctx fiber.Ctx) error {
-	status, err := utils.GetInt64pQuery(ctx, "status")
-	if err != nil {
-		return fiber.NewError(fiber.StatusBadRequest, err.Error())
-	}
-
-	// TODO: Необходимо тянуть из JWT
-	userId, err := utils.GetInt64pQuery(ctx, "userId")
-	if err != nil {
-		return fiber.NewError(fiber.StatusBadRequest, err.Error())
-	}
-	isOwner, err := utils.GetInt64pQuery(ctx, "owner")
+	userId, err := utils.GetInt64Query(ctx, "user_id")
 	if err != nil {
 		return fiber.NewError(fiber.StatusBadRequest, err.Error())
 	}
 
 	params := courses.GetListServiceParams{
-		Status: utils.Int64pToInt16p(status),
+		OwnerUserId: &userId,
 	}
-	if isOwner != nil {
-		params.OwnerUserId = userId
-	} else {
-		params.UserID = userId
+
+	filter := ctx.Query("filter")
+	if filter != "" {
+		params.Filter = &filter
 	}
 
 	coursesList, err := h.coursesService.GetList(ctx.Context(), params)
@@ -202,6 +210,43 @@ func (h *Handler) getCoursesList(ctx fiber.Ctx) error {
 	}
 
 	bytes, err := json.Marshal(coursesList)
+	if err != nil {
+		return fiber.NewError(fiber.StatusInternalServerError, err.Error())
+	}
+
+	if err = ctx.Status(http.StatusOK).Send(bytes); err != nil {
+		return fiber.NewError(fiber.StatusInternalServerError, err.Error())
+	}
+
+	return nil
+}
+
+// getCoursesStats godoc
+//
+//	@Summary		Course statistics
+//	@Description	Returns count of active courses and total students enrolled on active courses for the instructor.
+//	@Tags			courses
+//	@Produce		json
+//	@Param			user_id	query		int		true	"Instructor user ID (until JWT auth)"
+//	@Param			role	query		string	false	"User role (reserved for future auth)"
+//	@Success		200		{object}	domain.CoursesStatsResponse
+//	@Failure		400		{object}	ErrorResponse
+//	@Failure		500		{object}	ErrorResponse
+//	@Router			/courses/stats [get]
+func (h *Handler) getCoursesStats(ctx fiber.Ctx) error {
+	userId, err := utils.GetInt64Query(ctx, "user_id")
+	if err != nil {
+		return fiber.NewError(fiber.StatusBadRequest, err.Error())
+	}
+
+	stats, err := h.coursesService.GetStats(ctx.Context(), courses.GetStatsServiceParams{
+		OwnerUserId: userId,
+	})
+	if err != nil {
+		return fiber.NewError(fiber.StatusInternalServerError, err.Error())
+	}
+
+	bytes, err := json.Marshal(stats)
 	if err != nil {
 		return fiber.NewError(fiber.StatusInternalServerError, err.Error())
 	}
@@ -331,16 +376,17 @@ func (h *Handler) setCourseListeners(ctx fiber.Ctx) error {
 
 // getCourseWithAllItems godoc
 //
-//	@Summary	Get course with sections and items
-//	@Tags		courses
-//	@Produce	json
-//	@Param		course_id	path		int	true	"Course ID"
-//	@Param		limit		query		int	false	"Page size"
-//	@Param		offset		query		int	false	"Page offset"
-//	@Success	200			{object}	domain.CourseWithItems
-//	@Failure	400			{object}	ErrorResponse
-//	@Failure	500			{object}	ErrorResponse
-//	@Router		/courses/{course_id}/with-all-items [get]
+//	@Summary		Get course with all items
+//	@Description	Returns course metadata (including coverImageId) and nested sections with items (item_type, item_id for file/test/assignment reference).
+//	@Tags			courses
+//	@Produce		json
+//	@Param			course_id	path		int	true	"Course ID"
+//	@Param			limit		query		int	true	"Page size for joined rows"
+//	@Param			offset		query		int	true	"Page offset for joined rows"
+//	@Success		200			{object}	domain.CourseWithItems
+//	@Failure		400			{object}	ErrorResponse
+//	@Failure		500			{object}	ErrorResponse
+//	@Router			/courses/{course_id}/with-all-items [get]
 func (h *Handler) getCourseWithAllItems(ctx fiber.Ctx) error {
 	courseID, err := utils.GetInt64Param(ctx, "course_id")
 	if err != nil {

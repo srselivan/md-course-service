@@ -4,11 +4,11 @@ type (
 	CreateBank struct {
 		Title       string  `json:"title"`
 		Description *string `json:"description"`
-		CourseId    int64   `json:"course_id"`
+		UserId      int64   `json:"userId"`
 	}
 	UpdateBank struct {
 		Title       string  `json:"title"`
 		Description *string `json:"description"`
-		CourseId    int64   `json:"course_id"`
+		UserId      int64   `json:"userId"`
 	}
 )

@@ -42,7 +42,7 @@ func (h *Handler) createBank(ctx fiber.Ctx) error {
 	bank, err := h.banksService.Create(ctx.Context(), banks.CreateServiceParams{
 		Title:       req.Title,
 		Description: req.Description,
-		CourseId:    req.CourseId,
+		UserId:      req.UserId,
 	})
 	if err != nil {
 		return fiber.NewError(fiber.StatusInternalServerError, err.Error())
@@ -62,8 +62,9 @@ func (h *Handler) createBank(ctx fiber.Ctx) error {
 
 // updateBank godoc
 //
-//	@Summary	Update question bank
-//	@Tags		banks
+//	@Summary		Update question bank
+//	@Description	Updates title and description. userId in body must match the bank owner; userId is not changed.
+//	@Tags			banks
 //	@Accept		json
 //	@Produce	json
 //	@Param		id		path		int					true	"Bank ID"
@@ -87,7 +88,7 @@ func (h *Handler) updateBank(ctx fiber.Ctx) error {
 		ID:          id,
 		Title:       req.Title,
 		Description: req.Description,
-		CourseId:    req.CourseId,
+		UserId:      req.UserId,
 	})
 	if err != nil {
 		return fiber.NewError(fiber.StatusInternalServerError, err.Error())
@@ -136,19 +137,19 @@ func (h *Handler) deleteBank(ctx fiber.Ctx) error {
 //	@Summary	List question banks
 //	@Tags		banks
 //	@Produce	json
-//	@Param		course_id	query		int	true	"Course ID"
-//	@Success	200			{array}		domain.Bank
-//	@Failure	400			{object}	ErrorResponse
-//	@Failure	500			{object}	ErrorResponse
+//	@Param		user_id	query		int	true	"Owner user ID"
+//	@Success	200		{array}		domain.Bank
+//	@Failure	400		{object}	ErrorResponse
+//	@Failure	500		{object}	ErrorResponse
 //	@Router		/banks [get]
 func (h *Handler) getBanksList(ctx fiber.Ctx) error {
-	courseId, err := utils.GetInt64Query(ctx, "course_id")
+	userId, err := utils.GetInt64Query(ctx, "user_id")
 	if err != nil {
 		return fiber.NewError(fiber.StatusBadRequest, err.Error())
 	}
 
 	banksList, err := h.banksService.GetList(ctx.Context(), banks.GetListServiceParams{
-		CourseId: &courseId,
+		UserId: userId,
 	})
 	if err != nil {
 		return fiber.NewError(fiber.StatusInternalServerError, err.Error())

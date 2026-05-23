@@ -31,7 +31,7 @@ func (s *Service) Create(ctx context.Context, params CreateServiceParams) (domai
 	bank, err := s.repo.Create(ctx, CreateRepoParams{
 		Title:       params.Title,
 		Description: params.Description,
-		CourseId:    params.CourseId,
+		UserId:      params.UserId,
 	})
 	if err != nil {
 		return domain.Bank{}, fmt.Errorf("repo.Create: %w", err)
@@ -44,7 +44,7 @@ func (s *Service) Update(ctx context.Context, params UpdateServiceParams) (domai
 		ID:          params.ID,
 		Title:       params.Title,
 		Description: params.Description,
-		CourseId:    params.CourseId,
+		UserId:      params.UserId,
 	})
 	if err != nil {
 		return domain.Bank{}, fmt.Errorf("repo.Update: %w", err)
@@ -61,7 +61,7 @@ func (s *Service) Delete(ctx context.Context, id int64) error {
 
 func (s *Service) GetList(ctx context.Context, params GetListServiceParams) ([]domain.Bank, error) {
 	banksList, err := s.repo.GetList(ctx, GetListRepoParams{
-		CourseId: params.CourseId,
+		UserId: params.UserId,
 	})
 	if err != nil {
 		return nil, fmt.Errorf("repo.GetList: %w", err)

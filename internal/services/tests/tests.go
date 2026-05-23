@@ -133,9 +133,6 @@ func (s *Service) StartAttempt(ctx context.Context, params StartAttemptServicePa
 		return domain.AttemptState{}, err
 	}
 	questionsLimit := test.QuestionsCount
-	if settings.QuestionsCount > 0 {
-		questionsLimit = settings.QuestionsCount
-	}
 
 	questions, err := s.selectQuestionsForAttempt(ctx, params.TestID, questionsLimit, settings)
 	if err != nil {
@@ -225,6 +222,48 @@ func (s *Service) SaveAnswer(ctx context.Context, params SaveAnswerServiceParams
 		return fmt.Errorf("repo.SaveChoiceAnswers: %w", err)
 	}
 	return nil
+}
+
+func (s *Service) SubmitWithAnswers(ctx context.Context, params SubmitWithAnswersServiceParams) (domain.TestAttempt, error) {
+	attempt, err := s.repo.GetAttempt(ctx, params.AttemptID)
+	if err != nil {
+		return domain.TestAttempt{}, fmt.Errorf("repo.GetAttempt: %w", err)
+	}
+	if attempt.Status != domain.TestAttemptStatusInProgress {
+		return domain.TestAttempt{}, errors.New("attempt is not in progress")
+	}
+
+	for _, answer := range params.Answers {
+		answer.AttemptID = params.AttemptID
+		question, qErr := s.repo.GetAttemptQuestion(ctx, answer.AttemptQuestionID)
+		if qErr != nil {
+			return domain.TestAttempt{}, fmt.Errorf("repo.GetAttemptQuestion(%d): %w", answer.AttemptQuestionID, qErr)
+		}
+		if question.AttemptID != params.AttemptID {
+			return domain.TestAttempt{}, errors.New("attempt question does not belong to attempt")
+		}
+
+		if question.Type == domain.TestingQuestionTypeText {
+			if answer.TextResponse == nil {
+				continue
+			}
+			if err = s.repo.SaveTextAnswer(ctx, SaveTextAnswerRepoParams{
+				AttemptQuestionID: answer.AttemptQuestionID,
+				TextResponse:      *answer.TextResponse,
+			}); err != nil {
+				return domain.TestAttempt{}, fmt.Errorf("repo.SaveTextAnswer: %w", err)
+			}
+		} else {
+			if err = s.repo.SaveChoiceAnswers(ctx, SaveChoiceAnswersRepoParams{
+				AttemptQuestionID: answer.AttemptQuestionID,
+				SelectedAnswerIDs: answer.SelectedAnswerIDs,
+			}); err != nil {
+				return domain.TestAttempt{}, fmt.Errorf("repo.SaveChoiceAnswers: %w", err)
+			}
+		}
+	}
+
+	return s.SubmitAttempt(ctx, params.AttemptID)
 }
 
 func (s *Service) SubmitAttempt(ctx context.Context, attemptID int64) (domain.TestAttempt, error) {

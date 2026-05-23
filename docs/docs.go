@@ -210,6 +210,7 @@ const docTemplate = `{
         },
         "/attempts": {
             "get": {
+                "description": "Lists attempts with optional filters. status values: IN_PROGRESS, COMPLETED, NEEDS_GRADING.",
                 "produces": [
                     "application/json"
                 ],
@@ -220,18 +221,26 @@ const docTemplate = `{
                 "parameters": [
                     {
                         "type": "integer",
+                        "example": 10,
                         "description": "Filter by test ID",
                         "name": "test_id",
                         "in": "query"
                     },
                     {
                         "type": "integer",
+                        "example": 42,
                         "description": "Filter by user ID",
                         "name": "user_id",
                         "in": "query"
                     },
                     {
+                        "enum": [
+                            "IN_PROGRESS",
+                            "COMPLETED",
+                            "NEEDS_GRADING"
+                        ],
                         "type": "string",
+                        "example": "IN_PROGRESS",
                         "description": "Filter by status",
                         "name": "status",
                         "in": "query"
@@ -262,6 +271,7 @@ const docTemplate = `{
                 }
             },
             "post": {
+                "description": "Starts a new attempt. Optional limit/offset paginate questions in the response. Body: {\"testId\":10,\"userId\":42}.",
                 "consumes": [
                     "application/json"
                 ],
@@ -275,18 +285,20 @@ const docTemplate = `{
                 "parameters": [
                     {
                         "type": "integer",
+                        "example": 10,
                         "description": "Questions page size",
                         "name": "limit",
                         "in": "query"
                     },
                     {
                         "type": "integer",
+                        "example": 0,
                         "description": "Questions page offset",
                         "name": "offset",
                         "in": "query"
                     },
                     {
-                        "description": "Attempt",
+                        "description": "Attempt start payload",
                         "name": "body",
                         "in": "body",
                         "required": true,
@@ -313,6 +325,7 @@ const docTemplate = `{
         },
         "/attempts/{attempt_id}": {
             "get": {
+                "description": "Returns attempt metadata, remaining time, and paginated questions with answer options (without isCorrect). Each question may include saved response.",
                 "produces": [
                     "application/json"
                 ],
@@ -323,6 +336,7 @@ const docTemplate = `{
                 "parameters": [
                     {
                         "type": "integer",
+                        "example": 200,
                         "description": "Attempt ID",
                         "name": "attempt_id",
                         "in": "path",
@@ -330,12 +344,14 @@ const docTemplate = `{
                     },
                     {
                         "type": "integer",
+                        "example": 10,
                         "description": "Questions page size",
                         "name": "limit",
                         "in": "query"
                     },
                     {
                         "type": "integer",
+                        "example": 0,
                         "description": "Questions page offset",
                         "name": "offset",
                         "in": "query"
@@ -365,6 +381,7 @@ const docTemplate = `{
         },
         "/attempts/{attempt_id}/answers": {
             "put": {
+                "description": "Saves or updates an answer for one question. For SINGLE use selectedAnswerId; for MULTIPLE use selectedAnswerIds array; for TEXT use textResponse. See schemas SaveAttemptAnswerSingleExample, SaveAttemptAnswerMultipleExample, SaveAttemptAnswerTextExample.",
                 "consumes": [
                     "application/json"
                 ],
@@ -375,13 +392,14 @@ const docTemplate = `{
                 "parameters": [
                     {
                         "type": "integer",
+                        "example": 200,
                         "description": "Attempt ID",
                         "name": "attempt_id",
                         "in": "path",
                         "required": true
                     },
                     {
-                        "description": "Answer",
+                        "description": "Answer payload",
                         "name": "body",
                         "in": "body",
                         "required": true,
@@ -405,6 +423,7 @@ const docTemplate = `{
         },
         "/attempts/{attempt_id}/submit": {
             "post": {
+                "description": "Finishes the attempt and runs auto-grading for choice questions. Text questions may require manual grading (status NEEDS_GRADING).",
                 "produces": [
                     "application/json"
                 ],
@@ -415,6 +434,7 @@ const docTemplate = `{
                 "parameters": [
                     {
                         "type": "integer",
+                        "example": 200,
                         "description": "Attempt ID",
                         "name": "attempt_id",
                         "in": "path",
@@ -453,16 +473,82 @@ const docTemplate = `{
                         "name": "bank_id",
                         "in": "query",
                         "required": true
+                    },
+                    {
+                        "type": "integer",
+                        "description": "Page size",
+                        "name": "limit",
+                        "in": "query",
+                        "required": true
+                    },
+                    {
+                        "type": "integer",
+                        "description": "Page offset",
+                        "name": "offset",
+                        "in": "query",
+                        "required": true
+                    },
+                    {
+                        "type": "integer",
+                        "description": "Filter by question type",
+                        "name": "question_type",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "Filter by question text (substring, case-insensitive)",
+                        "name": "filter",
+                        "in": "query"
                     }
                 ],
                 "responses": {
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "type": "array",
-                            "items": {
-                                "$ref": "#/definitions/course-service_internal_domain.BankQuestion"
-                            }
+                            "$ref": "#/definitions/course-service_internal_domain.BankQuestionsListResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/internal_transport_http_v1.ErrorResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/internal_transport_http_v1.ErrorResponse"
+                        }
+                    }
+                }
+            },
+            "post": {
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "bank-questions"
+                ],
+                "summary": "Create bank question",
+                "parameters": [
+                    {
+                        "description": "Question",
+                        "name": "body",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/course-service_internal_transport_http_v1_request.CreateBankQuestion"
+                        }
+                    }
+                ],
+                "responses": {
+                    "201": {
+                        "description": "Created",
+                        "schema": {
+                            "$ref": "#/definitions/course-service_internal_domain.BankQuestion"
                         }
                     },
                     "400": {
@@ -519,15 +605,86 @@ const docTemplate = `{
                 }
             }
         },
-        "/bank_questions/generate": {
-            "post": {
+        "/bank_questions/{id}": {
+            "put": {
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
                 "tags": [
                     "bank-questions"
                 ],
-                "summary": "Generate bank questions (stub)",
+                "summary": "Update bank question",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "Question ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "description": "Question",
+                        "name": "body",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/course-service_internal_transport_http_v1_request.UpdateBankQuestion"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/course-service_internal_domain.BankQuestion"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/internal_transport_http_v1.ErrorResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/internal_transport_http_v1.ErrorResponse"
+                        }
+                    }
+                }
+            },
+            "delete": {
+                "tags": [
+                    "bank-questions"
+                ],
+                "summary": "Delete bank question",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "Question ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
                 "responses": {
                     "200": {
                         "description": "OK"
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/internal_transport_http_v1.ErrorResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/internal_transport_http_v1.ErrorResponse"
+                        }
                     }
                 }
             }
@@ -590,8 +747,8 @@ const docTemplate = `{
                 "parameters": [
                     {
                         "type": "integer",
-                        "description": "Course ID",
-                        "name": "course_id",
+                        "description": "Owner user ID",
+                        "name": "user_id",
                         "in": "query",
                         "required": true
                     }
@@ -666,6 +823,7 @@ const docTemplate = `{
         },
         "/banks/{id}": {
             "put": {
+                "description": "Updates title and description. userId in body must match the bank owner; userId is not changed.",
                 "consumes": [
                     "application/json"
                 ],
@@ -1135,7 +1293,62 @@ const docTemplate = `{
             }
         },
         "/courses": {
+            "get": {
+                "description": "Returns courses owned by user_id. Filter: if the value is numeric, matches course id; otherwise matches title (case-insensitive substring). Student count is in stats.totalStudents.",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "courses"
+                ],
+                "summary": "List instructor courses",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "Instructor user ID (until JWT auth)",
+                        "name": "user_id",
+                        "in": "query",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "User role (reserved for future auth)",
+                        "name": "role",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "Filter by course id or title",
+                        "name": "filter",
+                        "in": "query"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "array",
+                            "items": {
+                                "$ref": "#/definitions/course-service_internal_domain.Course"
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/internal_transport_http_v1.ErrorResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/internal_transport_http_v1.ErrorResponse"
+                        }
+                    }
+                }
+            },
             "post": {
+                "description": "Creates a course with status Draft (0). If coverImageId is set, publishes FileLoadedEvent to Kafka (file-topic).",
                 "consumes": [
                     "application/json"
                 ],
@@ -1162,6 +1375,53 @@ const docTemplate = `{
                         "description": "Created",
                         "schema": {
                             "$ref": "#/definitions/course-service_internal_domain.Course"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/internal_transport_http_v1.ErrorResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/internal_transport_http_v1.ErrorResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/courses/stats": {
+            "get": {
+                "description": "Returns count of active courses and total students enrolled on active courses for the instructor.",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "courses"
+                ],
+                "summary": "Course statistics",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "Instructor user ID (until JWT auth)",
+                        "name": "user_id",
+                        "in": "query",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "User role (reserved for future auth)",
+                        "name": "role",
+                        "in": "query"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/course-service_internal_domain.CoursesStatsResponse"
                         }
                     },
                     "400": {
@@ -1313,13 +1573,14 @@ const docTemplate = `{
         },
         "/courses/{course_id}/with-all-items": {
             "get": {
+                "description": "Returns course metadata (including coverImageId) and nested sections with items (item_type, item_id for file/test/assignment reference).",
                 "produces": [
                     "application/json"
                 ],
                 "tags": [
                     "courses"
                 ],
-                "summary": "Get course with sections and items",
+                "summary": "Get course with all items",
                 "parameters": [
                     {
                         "type": "integer",
@@ -1330,15 +1591,17 @@ const docTemplate = `{
                     },
                     {
                         "type": "integer",
-                        "description": "Page size",
+                        "description": "Page size for joined rows",
                         "name": "limit",
-                        "in": "query"
+                        "in": "query",
+                        "required": true
                     },
                     {
                         "type": "integer",
-                        "description": "Page offset",
+                        "description": "Page offset for joined rows",
                         "name": "offset",
-                        "in": "query"
+                        "in": "query",
+                        "required": true
                     }
                 ],
                 "responses": {
@@ -1403,6 +1666,7 @@ const docTemplate = `{
                 }
             },
             "put": {
+                "description": "Updates course fields. When coverImageId changes, emits FileLoadedEvent and/or FileDeletedEvent to Kafka.",
                 "consumes": [
                     "application/json"
                 ],
@@ -1487,6 +1751,7 @@ const docTemplate = `{
         },
         "/tests": {
             "get": {
+                "description": "Returns tests for a course. Query course_id is optional; omit to get all tests.",
                 "produces": [
                     "application/json"
                 ],
@@ -1497,6 +1762,7 @@ const docTemplate = `{
                 "parameters": [
                     {
                         "type": "integer",
+                        "example": 1,
                         "description": "Filter by course ID",
                         "name": "course_id",
                         "in": "query"
@@ -1526,50 +1792,8 @@ const docTemplate = `{
                     }
                 }
             },
-            "put": {
-                "consumes": [
-                    "application/json"
-                ],
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "tests"
-                ],
-                "summary": "Update test",
-                "parameters": [
-                    {
-                        "description": "Test",
-                        "name": "body",
-                        "in": "body",
-                        "required": true,
-                        "schema": {
-                            "$ref": "#/definitions/course-service_internal_transport_http_v1_request.UpdateTest"
-                        }
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "OK",
-                        "schema": {
-                            "$ref": "#/definitions/course-service_internal_domain.Test"
-                        }
-                    },
-                    "400": {
-                        "description": "Bad Request",
-                        "schema": {
-                            "$ref": "#/definitions/internal_transport_http_v1.ErrorResponse"
-                        }
-                    },
-                    "500": {
-                        "description": "Internal Server Error",
-                        "schema": {
-                            "$ref": "#/definitions/internal_transport_http_v1.ErrorResponse"
-                        }
-                    }
-                }
-            },
             "post": {
+                "description": "Creates a test linked to a course section item. generationSettings is a JSON object: {\"shuffleQuestions\":true,\"difficultyLevels\":[1,2,3]}. questionsCount is a top-level field on the test. bankIds lists question banks used for random question generation. Dates are RFC3339 (UTC recommended).",
                 "consumes": [
                     "application/json"
                 ],
@@ -1582,7 +1806,7 @@ const docTemplate = `{
                 "summary": "Create test",
                 "parameters": [
                     {
-                        "description": "Test",
+                        "description": "Test payload",
                         "name": "body",
                         "in": "body",
                         "required": true,
@@ -1613,6 +1837,7 @@ const docTemplate = `{
                 }
             },
             "delete": {
+                "description": "Deletes a test. Provide test_id in path or query.",
                 "tags": [
                     "tests"
                 ],
@@ -1620,6 +1845,7 @@ const docTemplate = `{
                 "parameters": [
                     {
                         "type": "integer",
+                        "example": 10,
                         "description": "Test ID (query)",
                         "name": "test_id",
                         "in": "query"
@@ -1646,6 +1872,7 @@ const docTemplate = `{
         },
         "/tests/{test_id}": {
             "get": {
+                "description": "Returns test metadata and all attempts of the given user for this test.",
                 "produces": [
                     "application/json"
                 ],
@@ -1656,6 +1883,7 @@ const docTemplate = `{
                 "parameters": [
                     {
                         "type": "integer",
+                        "example": 10,
                         "description": "Test ID",
                         "name": "test_id",
                         "in": "path",
@@ -1663,6 +1891,7 @@ const docTemplate = `{
                     },
                     {
                         "type": "integer",
+                        "example": 42,
                         "description": "User ID",
                         "name": "user_id",
                         "in": "query",
@@ -1691,6 +1920,7 @@ const docTemplate = `{
                 }
             },
             "put": {
+                "description": "Updates test fields. test_id can be passed in path or in body as id. Same body format as create.",
                 "consumes": [
                     "application/json"
                 ],
@@ -1704,12 +1934,13 @@ const docTemplate = `{
                 "parameters": [
                     {
                         "type": "integer",
+                        "example": 10,
                         "description": "Test ID (path)",
                         "name": "test_id",
                         "in": "path"
                     },
                     {
-                        "description": "Test",
+                        "description": "Test payload",
                         "name": "body",
                         "in": "body",
                         "required": true,
@@ -1740,6 +1971,7 @@ const docTemplate = `{
                 }
             },
             "delete": {
+                "description": "Deletes a test. Provide test_id in path or query.",
                 "tags": [
                     "tests"
                 ],
@@ -1747,12 +1979,14 @@ const docTemplate = `{
                 "parameters": [
                     {
                         "type": "integer",
+                        "example": 10,
                         "description": "Test ID (query)",
                         "name": "test_id",
                         "in": "query"
                     },
                     {
                         "type": "integer",
+                        "example": 10,
                         "description": "Test ID (path)",
                         "name": "test_id",
                         "in": "path"
@@ -1779,6 +2013,7 @@ const docTemplate = `{
         },
         "/tests/{test_id}/attempts": {
             "get": {
+                "description": "Lists attempts for a specific test. status values: IN_PROGRESS, COMPLETED, NEEDS_GRADING.",
                 "produces": [
                     "application/json"
                 ],
@@ -1789,6 +2024,7 @@ const docTemplate = `{
                 "parameters": [
                     {
                         "type": "integer",
+                        "example": 10,
                         "description": "Test ID",
                         "name": "test_id",
                         "in": "path",
@@ -1796,12 +2032,19 @@ const docTemplate = `{
                     },
                     {
                         "type": "integer",
+                        "example": 42,
                         "description": "Filter by user ID",
                         "name": "user_id",
                         "in": "query"
                     },
                     {
+                        "enum": [
+                            "IN_PROGRESS",
+                            "COMPLETED",
+                            "NEEDS_GRADING"
+                        ],
                         "type": "string",
+                        "example": "COMPLETED",
                         "description": "Filter by status",
                         "name": "status",
                         "in": "query"
@@ -1834,6 +2077,7 @@ const docTemplate = `{
         },
         "/tests/{test_id}/attempts/{attempt_id}": {
             "get": {
+                "description": "Same response as GET /attempts/{attempt_id}, but validates that the attempt belongs to the given test.",
                 "produces": [
                     "application/json"
                 ],
@@ -1844,6 +2088,7 @@ const docTemplate = `{
                 "parameters": [
                     {
                         "type": "integer",
+                        "example": 10,
                         "description": "Test ID",
                         "name": "test_id",
                         "in": "path",
@@ -1851,6 +2096,7 @@ const docTemplate = `{
                     },
                     {
                         "type": "integer",
+                        "example": 200,
                         "description": "Attempt ID",
                         "name": "attempt_id",
                         "in": "path",
@@ -1858,12 +2104,14 @@ const docTemplate = `{
                     },
                     {
                         "type": "integer",
+                        "example": 10,
                         "description": "Questions page size",
                         "name": "limit",
                         "in": "query"
                     },
                     {
                         "type": "integer",
+                        "example": 0,
                         "description": "Questions page offset",
                         "name": "offset",
                         "in": "query"
@@ -1899,6 +2147,7 @@ const docTemplate = `{
         },
         "/tests/{test_id}/attempts/{attempt_id}/grades": {
             "post": {
+                "description": "Assigns scores to text (or other manually graded) questions. Body: {\"scores\":[{\"attemptQuestionId\":501,\"scoreAwarded\":8,\"instructorComment\":\"Partially correct\"}]}.",
                 "consumes": [
                     "application/json"
                 ],
@@ -1912,6 +2161,7 @@ const docTemplate = `{
                 "parameters": [
                     {
                         "type": "integer",
+                        "example": 10,
                         "description": "Test ID",
                         "name": "test_id",
                         "in": "path",
@@ -1919,13 +2169,14 @@ const docTemplate = `{
                     },
                     {
                         "type": "integer",
+                        "example": 200,
                         "description": "Attempt ID",
                         "name": "attempt_id",
                         "in": "path",
                         "required": true
                     },
                     {
-                        "description": "Scores",
+                        "description": "Manual scores",
                         "name": "body",
                         "in": "body",
                         "required": true,
@@ -1967,16 +2218,16 @@ const docTemplate = `{
         "course-service_internal_domain.Assignment": {
             "type": "object",
             "properties": {
-                "deadline_days": {
+                "deadlineDays": {
                     "type": "integer"
                 },
                 "description": {
                     "type": "string"
                 },
-                "item_id": {
+                "itemId": {
                     "type": "integer"
                 },
-                "max_score": {
+                "maxScore": {
                     "type": "integer"
                 }
             }
@@ -1984,17 +2235,21 @@ const docTemplate = `{
         "course-service_internal_domain.AttemptAnswer": {
             "type": "object",
             "properties": {
-                "attempt_question_id": {
-                    "type": "integer"
+                "attemptQuestionId": {
+                    "type": "integer",
+                    "example": 501
                 },
                 "id": {
-                    "type": "integer"
+                    "type": "integer",
+                    "example": 601
                 },
-                "selected_answer_id": {
-                    "type": "integer"
+                "selectedAnswerId": {
+                    "type": "integer",
+                    "example": 1001
                 },
-                "text_response": {
-                    "type": "string"
+                "textResponse": {
+                    "type": "string",
+                    "example": "The answer is 42"
                 }
             }
         },
@@ -2002,13 +2257,16 @@ const docTemplate = `{
             "type": "object",
             "properties": {
                 "limit": {
-                    "type": "integer"
+                    "type": "integer",
+                    "example": 10
                 },
                 "offset": {
-                    "type": "integer"
+                    "type": "integer",
+                    "example": 0
                 },
                 "total": {
-                    "type": "integer"
+                    "type": "integer",
+                    "example": 20
                 }
             }
         },
@@ -2021,26 +2279,32 @@ const docTemplate = `{
                         "$ref": "#/definitions/course-service_internal_domain.PublicQuestionAnswer"
                     }
                 },
-                "attempt_id": {
-                    "type": "integer"
+                "attemptId": {
+                    "type": "integer",
+                    "example": 200
                 },
                 "id": {
-                    "type": "integer"
+                    "type": "integer",
+                    "example": 501
                 },
-                "instructor_comment": {
-                    "type": "string"
+                "instructorComment": {
+                    "type": "string",
+                    "example": "Correct"
                 },
-                "order_index": {
-                    "type": "integer"
+                "orderIndex": {
+                    "type": "integer",
+                    "example": 0
                 },
                 "points": {
-                    "type": "integer"
+                    "type": "integer",
+                    "example": 5
                 },
                 "question": {
                     "$ref": "#/definitions/course-service_internal_domain.Question"
                 },
-                "question_id": {
-                    "type": "integer"
+                "questionId": {
+                    "type": "integer",
+                    "example": 100
                 },
                 "response": {
                     "type": "array",
@@ -2048,14 +2312,26 @@ const docTemplate = `{
                         "$ref": "#/definitions/course-service_internal_domain.AttemptAnswer"
                     }
                 },
-                "score_awarded": {
-                    "type": "integer"
+                "scoreAwarded": {
+                    "type": "integer",
+                    "example": 5
                 },
                 "text": {
-                    "type": "string"
+                    "type": "string",
+                    "example": "What is 2+2?"
                 },
                 "type": {
-                    "$ref": "#/definitions/course-service_internal_domain.TestingQuestionType"
+                    "enum": [
+                        "SINGLE",
+                        "MULTIPLE",
+                        "TEXT"
+                    ],
+                    "allOf": [
+                        {
+                            "$ref": "#/definitions/course-service_internal_domain.TestingQuestionType"
+                        }
+                    ],
+                    "example": "SINGLE"
                 }
             }
         },
@@ -2074,18 +2350,16 @@ const docTemplate = `{
                         "$ref": "#/definitions/course-service_internal_domain.AttemptQuestionState"
                     }
                 },
-                "remaining_seconds": {
-                    "type": "integer"
+                "remainingSeconds": {
+                    "type": "integer",
+                    "example": 2700
                 }
             }
         },
         "course-service_internal_domain.Bank": {
             "type": "object",
             "properties": {
-                "course_id": {
-                    "type": "integer"
-                },
-                "created_at": {
+                "createdAt": {
                     "type": "string"
                 },
                 "description": {
@@ -2094,27 +2368,33 @@ const docTemplate = `{
                 "id": {
                     "type": "integer"
                 },
+                "questionsCount": {
+                    "type": "integer"
+                },
                 "title": {
                     "type": "string"
                 },
-                "updated_at": {
+                "updatedAt": {
                     "type": "string"
+                },
+                "userId": {
+                    "type": "integer"
                 }
             }
         },
         "course-service_internal_domain.BankAnswer": {
             "type": "object",
             "properties": {
-                "answer_text": {
+                "answerText": {
                     "type": "string"
                 },
                 "id": {
                     "type": "integer"
                 },
-                "is_correct": {
+                "isCorrect": {
                     "type": "boolean"
                 },
-                "question_id": {
+                "questionId": {
                     "type": "integer"
                 }
             }
@@ -2128,29 +2408,61 @@ const docTemplate = `{
                         "$ref": "#/definitions/course-service_internal_domain.BankAnswer"
                     }
                 },
-                "bank_id": {
+                "bankId": {
                     "type": "integer"
                 },
-                "created_at": {
+                "createdAt": {
                     "type": "string"
                 },
-                "default_points": {
+                "defaultPoints": {
                     "type": "integer"
                 },
                 "id": {
                     "type": "integer"
                 },
-                "question_text": {
+                "questionText": {
                     "type": "string"
                 },
-                "question_type": {
+                "questionType": {
                     "$ref": "#/definitions/course-service_internal_domain.QuestionType"
+                }
+            }
+        },
+        "course-service_internal_domain.BankQuestionsListMeta": {
+            "type": "object",
+            "properties": {
+                "limit": {
+                    "type": "integer"
+                },
+                "offset": {
+                    "type": "integer"
+                },
+                "total": {
+                    "type": "integer"
+                }
+            }
+        },
+        "course-service_internal_domain.BankQuestionsListResponse": {
+            "type": "object",
+            "properties": {
+                "data": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/course-service_internal_domain.BankQuestion"
+                    }
+                },
+                "meta": {
+                    "$ref": "#/definitions/course-service_internal_domain.BankQuestionsListMeta"
                 }
             }
         },
         "course-service_internal_domain.Course": {
             "type": "object",
             "properties": {
+                "coverImageId": {
+                    "type": "string",
+                    "example": "550e8400-e29b-41d4-a716-446655440000"
+                },
                 "createdAt": {
                     "type": "string"
                 },
@@ -2158,19 +2470,28 @@ const docTemplate = `{
                     "type": "string"
                 },
                 "id": {
-                    "type": "integer"
+                    "type": "integer",
+                    "example": 1
                 },
                 "ownerUserId": {
-                    "type": "integer"
+                    "type": "integer",
+                    "example": 42
                 },
                 "stats": {
                     "$ref": "#/definitions/course-service_internal_domain.CourseStats"
                 },
                 "status": {
-                    "type": "integer"
+                    "description": "0 — Draft, 1 — Active",
+                    "type": "integer",
+                    "enum": [
+                        0,
+                        1
+                    ],
+                    "example": 0
                 },
                 "title": {
-                    "type": "string"
+                    "type": "string",
+                    "example": "Advanced Calculus"
                 },
                 "updatedAt": {
                     "type": "string"
@@ -2180,16 +2501,16 @@ const docTemplate = `{
         "course-service_internal_domain.CourseSection": {
             "type": "object",
             "properties": {
-                "course_id": {
+                "courseId": {
                     "type": "integer"
                 },
                 "id": {
                     "type": "integer"
                 },
-                "parent_id": {
+                "parentId": {
                     "type": "integer"
                 },
-                "sort_order": {
+                "sortOrder": {
                     "type": "integer"
                 },
                 "title": {
@@ -2201,29 +2522,44 @@ const docTemplate = `{
             "type": "object",
             "properties": {
                 "id": {
-                    "type": "integer"
+                    "type": "integer",
+                    "example": 10
                 },
-                "is_published": {
-                    "type": "boolean"
+                "isPublished": {
+                    "type": "boolean",
+                    "example": true
                 },
-                "item_type": {
-                    "type": "string"
+                "itemId": {
+                    "type": "integer",
+                    "example": 100
                 },
-                "section_id": {
-                    "type": "integer"
+                "itemType": {
+                    "type": "string",
+                    "enum": [
+                        "lecture",
+                        "assignment",
+                        "test"
+                    ],
+                    "example": "test"
                 },
-                "sort_order": {
-                    "type": "integer"
+                "sectionId": {
+                    "type": "integer",
+                    "example": 5
+                },
+                "sortOrder": {
+                    "type": "integer",
+                    "example": 1
                 },
                 "title": {
-                    "type": "string"
+                    "type": "string",
+                    "example": "Midterm"
                 }
             }
         },
         "course-service_internal_domain.CourseSectionWithItems": {
             "type": "object",
             "properties": {
-                "course_id": {
+                "courseId": {
                     "type": "integer"
                 },
                 "id": {
@@ -2235,10 +2571,10 @@ const docTemplate = `{
                         "$ref": "#/definitions/course-service_internal_domain.CourseSectionItem"
                     }
                 },
-                "parent_id": {
+                "parentId": {
                     "type": "integer"
                 },
-                "sort_order": {
+                "sortOrder": {
                     "type": "integer"
                 },
                 "title": {
@@ -2250,13 +2586,18 @@ const docTemplate = `{
             "type": "object",
             "properties": {
                 "totalStudents": {
-                    "type": "integer"
+                    "type": "integer",
+                    "example": 45
                 }
             }
         },
         "course-service_internal_domain.CourseWithItems": {
             "type": "object",
             "properties": {
+                "coverImageId": {
+                    "type": "string",
+                    "example": "550e8400-e29b-41d4-a716-446655440000"
+                },
                 "createdAt": {
                     "type": "string"
                 },
@@ -2264,10 +2605,12 @@ const docTemplate = `{
                     "type": "string"
                 },
                 "id": {
-                    "type": "integer"
+                    "type": "integer",
+                    "example": 1
                 },
                 "ownerUserId": {
-                    "type": "integer"
+                    "type": "integer",
+                    "example": 42
                 },
                 "sections": {
                     "type": "array",
@@ -2279,13 +2622,33 @@ const docTemplate = `{
                     "$ref": "#/definitions/course-service_internal_domain.CourseStats"
                 },
                 "status": {
-                    "type": "integer"
+                    "description": "0 — Draft, 1 — Active",
+                    "type": "integer",
+                    "enum": [
+                        0,
+                        1
+                    ],
+                    "example": 0
                 },
                 "title": {
-                    "type": "string"
+                    "type": "string",
+                    "example": "Advanced Calculus"
                 },
                 "updatedAt": {
                     "type": "string"
+                }
+            }
+        },
+        "course-service_internal_domain.CoursesStatsResponse": {
+            "type": "object",
+            "properties": {
+                "activeCoursesCount": {
+                    "type": "integer",
+                    "example": 3
+                },
+                "totalStudents": {
+                    "type": "integer",
+                    "example": 120
                 }
             }
         },
@@ -2293,13 +2656,16 @@ const docTemplate = `{
             "type": "object",
             "properties": {
                 "id": {
-                    "type": "integer"
+                    "type": "integer",
+                    "example": 1001
                 },
-                "question_id": {
-                    "type": "integer"
+                "questionId": {
+                    "type": "integer",
+                    "example": 100
                 },
                 "text": {
-                    "type": "string"
+                    "type": "string",
+                    "example": "4"
                 }
             }
         },
@@ -2312,23 +2678,38 @@ const docTemplate = `{
                         "$ref": "#/definitions/course-service_internal_domain.QuestionAnswer"
                     }
                 },
-                "bank_id": {
-                    "type": "integer"
+                "bankId": {
+                    "type": "integer",
+                    "example": 1
                 },
-                "difficulty_level": {
-                    "type": "integer"
+                "difficultyLevel": {
+                    "type": "integer",
+                    "example": 2
                 },
                 "id": {
-                    "type": "integer"
+                    "type": "integer",
+                    "example": 100
                 },
                 "points": {
-                    "type": "integer"
+                    "type": "integer",
+                    "example": 5
                 },
                 "text": {
-                    "type": "string"
+                    "type": "string",
+                    "example": "What is 2+2?"
                 },
                 "type": {
-                    "$ref": "#/definitions/course-service_internal_domain.TestingQuestionType"
+                    "enum": [
+                        "SINGLE",
+                        "MULTIPLE",
+                        "TEXT"
+                    ],
+                    "allOf": [
+                        {
+                            "$ref": "#/definitions/course-service_internal_domain.TestingQuestionType"
+                        }
+                    ],
+                    "example": "SINGLE"
                 }
             }
         },
@@ -2336,16 +2717,20 @@ const docTemplate = `{
             "type": "object",
             "properties": {
                 "id": {
-                    "type": "integer"
+                    "type": "integer",
+                    "example": 1001
                 },
-                "is_correct": {
-                    "type": "boolean"
+                "isCorrect": {
+                    "type": "boolean",
+                    "example": true
                 },
-                "question_id": {
-                    "type": "integer"
+                "questionId": {
+                    "type": "integer",
+                    "example": 100
                 },
                 "text": {
-                    "type": "string"
+                    "type": "string",
+                    "example": "4"
                 }
             }
         },
@@ -2366,88 +2751,129 @@ const docTemplate = `{
         "course-service_internal_domain.Test": {
             "type": "object",
             "properties": {
-                "available_from": {
-                    "type": "string"
+                "availableFrom": {
+                    "type": "string",
+                    "example": "2026-06-01T09:00:00Z"
                 },
-                "available_to": {
-                    "type": "string"
+                "availableTo": {
+                    "type": "string",
+                    "example": "2026-06-30T23:59:59Z"
                 },
-                "bank_ids": {
+                "bankIds": {
                     "type": "array",
                     "items": {
                         "type": "integer"
-                    }
+                    },
+                    "example": [
+                        1,
+                        2
+                    ]
                 },
-                "course_id": {
-                    "type": "integer"
+                "courseId": {
+                    "type": "integer",
+                    "example": 1
                 },
-                "course_section_id": {
-                    "type": "integer"
+                "courseSectionItemId": {
+                    "type": "integer",
+                    "example": 15
                 },
-                "created_at": {
-                    "type": "string"
+                "createdAt": {
+                    "type": "string",
+                    "example": "2026-05-01T12:00:00Z"
                 },
                 "description": {
-                    "type": "string"
+                    "type": "string",
+                    "example": "Final assessment for module 1"
                 },
-                "duration_seconds": {
-                    "type": "integer"
+                "durationSeconds": {
+                    "type": "integer",
+                    "example": 3600
                 },
-                "generation_settings": {
-                    "type": "array",
-                    "items": {
-                        "type": "integer"
-                    }
+                "generationSettings": {
+                    "type": "object"
                 },
                 "id": {
-                    "type": "integer"
+                    "type": "integer",
+                    "example": 10
                 },
-                "max_attempts": {
-                    "type": "integer"
+                "maxAttempts": {
+                    "type": "integer",
+                    "example": 3
                 },
-                "max_score": {
-                    "type": "integer"
+                "maxScore": {
+                    "type": "integer",
+                    "example": 100
                 },
-                "questions_count": {
-                    "type": "integer"
+                "questionsCount": {
+                    "type": "integer",
+                    "example": 20
                 },
                 "title": {
-                    "type": "string"
+                    "type": "string",
+                    "example": "Midterm Exam"
                 }
             }
         },
         "course-service_internal_domain.TestAttempt": {
             "type": "object",
             "properties": {
-                "attempt_number": {
-                    "type": "integer"
+                "attemptNumber": {
+                    "type": "integer",
+                    "example": 1
                 },
-                "completed_at": {
-                    "type": "string"
+                "completedAt": {
+                    "type": "string",
+                    "example": "2026-06-15T10:45:00Z"
                 },
-                "expires_at": {
-                    "type": "string"
+                "expiresAt": {
+                    "type": "string",
+                    "example": "2026-06-15T11:00:00Z"
                 },
-                "grade_status": {
-                    "$ref": "#/definitions/course-service_internal_domain.TestGradeStatus"
+                "gradeStatus": {
+                    "enum": [
+                        "NONE",
+                        "READY",
+                        "PRE_GRADED"
+                    ],
+                    "allOf": [
+                        {
+                            "$ref": "#/definitions/course-service_internal_domain.TestGradeStatus"
+                        }
+                    ],
+                    "example": "NONE"
                 },
                 "id": {
-                    "type": "integer"
+                    "type": "integer",
+                    "example": 200
                 },
-                "started_at": {
-                    "type": "string"
+                "startedAt": {
+                    "type": "string",
+                    "example": "2026-06-15T10:00:00Z"
                 },
                 "status": {
-                    "$ref": "#/definitions/course-service_internal_domain.TestAttemptStatus"
+                    "enum": [
+                        "IN_PROGRESS",
+                        "COMPLETED",
+                        "NEEDS_GRADING"
+                    ],
+                    "allOf": [
+                        {
+                            "$ref": "#/definitions/course-service_internal_domain.TestAttemptStatus"
+                        }
+                    ],
+                    "example": "IN_PROGRESS"
                 },
-                "test_id": {
-                    "type": "integer"
+                "testId": {
+                    "type": "integer",
+                    "example": 10
                 },
-                "total_score": {
-                    "type": "integer"
+                "totalScore": {
+                    "type": "integer",
+                    "example": 85
                 },
-                "user_id": {
-                    "type": "integer"
+                "userId": {
+                    "type": "integer",
+                    "example": 42
                 }
             }
         },
@@ -2463,6 +2889,26 @@ const docTemplate = `{
                 "TestAttemptStatusCompleted",
                 "TestAttemptStatusNeedsGrading"
             ]
+        },
+        "course-service_internal_domain.TestGenerationSettings": {
+            "type": "object",
+            "properties": {
+                "difficultyLevels": {
+                    "type": "array",
+                    "items": {
+                        "type": "integer"
+                    },
+                    "example": [
+                        1,
+                        2,
+                        3
+                    ]
+                },
+                "shuffleQuestions": {
+                    "type": "boolean",
+                    "example": true
+                }
+            }
         },
         "course-service_internal_domain.TestGradeStatus": {
             "type": "string",
@@ -2507,10 +2953,10 @@ const docTemplate = `{
         "course-service_internal_transport_http_v1_request.BankAnswer": {
             "type": "object",
             "properties": {
-                "answer_text": {
+                "answerText": {
                     "type": "string"
                 },
-                "is_correct": {
+                "isCorrect": {
                     "type": "boolean"
                 }
             }
@@ -2540,16 +2986,16 @@ const docTemplate = `{
         "course-service_internal_transport_http_v1_request.CreateAssignment": {
             "type": "object",
             "properties": {
-                "deadline_days": {
+                "deadlineDays": {
                     "type": "integer"
                 },
                 "description": {
                     "type": "string"
                 },
-                "item_id": {
+                "itemId": {
                     "type": "integer"
                 },
-                "max_score": {
+                "maxScore": {
                     "type": "integer"
                 }
             }
@@ -2557,14 +3003,14 @@ const docTemplate = `{
         "course-service_internal_transport_http_v1_request.CreateBank": {
             "type": "object",
             "properties": {
-                "course_id": {
-                    "type": "integer"
-                },
                 "description": {
                     "type": "string"
                 },
                 "title": {
                     "type": "string"
+                },
+                "userId": {
+                    "type": "integer"
                 }
             }
         },
@@ -2577,16 +3023,16 @@ const docTemplate = `{
                         "$ref": "#/definitions/course-service_internal_transport_http_v1_request.BankAnswer"
                     }
                 },
-                "bank_id": {
+                "bankId": {
                     "type": "integer"
                 },
-                "default_points": {
+                "defaultPoints": {
                     "type": "integer"
                 },
-                "question_text": {
+                "questionText": {
                     "type": "string"
                 },
-                "question_type": {
+                "questionType": {
                     "type": "integer"
                 }
             }
@@ -2594,27 +3040,33 @@ const docTemplate = `{
         "course-service_internal_transport_http_v1_request.CreateCourse": {
             "type": "object",
             "properties": {
+                "coverImageId": {
+                    "type": "string",
+                    "example": "550e8400-e29b-41d4-a716-446655440000"
+                },
                 "description": {
                     "type": "string"
                 },
                 "ownerUserId": {
-                    "type": "integer"
+                    "type": "integer",
+                    "example": 42
                 },
                 "title": {
-                    "type": "string"
+                    "type": "string",
+                    "example": "Advanced Calculus"
                 }
             }
         },
         "course-service_internal_transport_http_v1_request.CreateCourseSection": {
             "type": "object",
             "properties": {
-                "course_id": {
+                "courseId": {
                     "type": "integer"
                 },
-                "parent_id": {
+                "parentId": {
                     "type": "integer"
                 },
-                "sort_order": {
+                "sortOrder": {
                     "type": "integer"
                 },
                 "title": {
@@ -2625,16 +3077,16 @@ const docTemplate = `{
         "course-service_internal_transport_http_v1_request.CreateCourseSectionItem": {
             "type": "object",
             "properties": {
-                "is_published": {
+                "isPublished": {
                     "type": "boolean"
                 },
-                "item_type": {
+                "itemType": {
                     "type": "string"
                 },
-                "section_id": {
+                "sectionId": {
                     "type": "integer"
                 },
-                "sort_order": {
+                "sortOrder": {
                     "type": "integer"
                 },
                 "title": {
@@ -2645,47 +3097,58 @@ const docTemplate = `{
         "course-service_internal_transport_http_v1_request.CreateTest": {
             "type": "object",
             "properties": {
-                "available_from": {
-                    "type": "string"
+                "availableFrom": {
+                    "type": "string",
+                    "example": "2026-06-01T09:00:00Z"
                 },
-                "available_to": {
-                    "type": "string"
+                "availableTo": {
+                    "type": "string",
+                    "example": "2026-06-30T23:59:59Z"
                 },
-                "bank_ids": {
+                "bankIds": {
                     "type": "array",
                     "items": {
                         "type": "integer"
-                    }
+                    },
+                    "example": [
+                        1,
+                        2
+                    ]
                 },
-                "course_id": {
-                    "type": "integer"
+                "courseId": {
+                    "type": "integer",
+                    "example": 1
                 },
-                "course_section_id": {
-                    "type": "integer"
+                "courseSectionItemId": {
+                    "type": "integer",
+                    "example": 15
                 },
                 "description": {
-                    "type": "string"
+                    "type": "string",
+                    "example": "Final assessment for module 1"
                 },
-                "duration_seconds": {
-                    "type": "integer"
+                "durationSeconds": {
+                    "type": "integer",
+                    "example": 3600
                 },
-                "generation_settings": {
-                    "type": "array",
-                    "items": {
-                        "type": "integer"
-                    }
+                "generationSettings": {
+                    "$ref": "#/definitions/course-service_internal_domain.TestGenerationSettings"
                 },
-                "max_attempts": {
-                    "type": "integer"
+                "maxAttempts": {
+                    "type": "integer",
+                    "example": 3
                 },
-                "max_score": {
-                    "type": "integer"
+                "maxScore": {
+                    "type": "integer",
+                    "example": 100
                 },
-                "questions_count": {
-                    "type": "integer"
+                "questionsCount": {
+                    "type": "integer",
+                    "example": 20
                 },
                 "title": {
-                    "type": "string"
+                    "type": "string",
+                    "example": "Midterm Exam"
                 }
             }
         },
@@ -2720,34 +3183,44 @@ const docTemplate = `{
         "course-service_internal_transport_http_v1_request.GradeAttemptQuestion": {
             "type": "object",
             "properties": {
-                "attempt_question_id": {
-                    "type": "integer"
+                "attemptQuestionId": {
+                    "type": "integer",
+                    "example": 501
                 },
-                "instructor_comment": {
-                    "type": "string"
+                "instructorComment": {
+                    "type": "string",
+                    "example": "Partially correct reasoning"
                 },
-                "score_awarded": {
-                    "type": "integer"
+                "scoreAwarded": {
+                    "type": "integer",
+                    "example": 8
                 }
             }
         },
         "course-service_internal_transport_http_v1_request.SaveAttemptAnswer": {
             "type": "object",
             "properties": {
-                "attempt_question_id": {
-                    "type": "integer"
+                "attemptQuestionId": {
+                    "type": "integer",
+                    "example": 501
                 },
-                "selected_answer_id": {
-                    "type": "integer"
+                "selectedAnswerId": {
+                    "type": "integer",
+                    "example": 1001
                 },
-                "selected_answer_ids": {
+                "selectedAnswerIds": {
                     "type": "array",
                     "items": {
                         "type": "integer"
-                    }
+                    },
+                    "example": [
+                        1001,
+                        1003
+                    ]
                 },
-                "text_response": {
-                    "type": "string"
+                "textResponse": {
+                    "type": "string",
+                    "example": "The answer is 42"
                 }
             }
         },
@@ -2771,27 +3244,29 @@ const docTemplate = `{
         "course-service_internal_transport_http_v1_request.StartAttempt": {
             "type": "object",
             "properties": {
-                "test_id": {
-                    "type": "integer"
+                "testId": {
+                    "type": "integer",
+                    "example": 10
                 },
-                "user_id": {
-                    "type": "integer"
+                "userId": {
+                    "type": "integer",
+                    "example": 42
                 }
             }
         },
         "course-service_internal_transport_http_v1_request.UpdateAssignment": {
             "type": "object",
             "properties": {
-                "deadline_days": {
+                "deadlineDays": {
                     "type": "integer"
                 },
                 "description": {
                     "type": "string"
                 },
-                "item_id": {
+                "itemId": {
                     "type": "integer"
                 },
-                "max_score": {
+                "maxScore": {
                     "type": "integer"
                 }
             }
@@ -2799,14 +3274,14 @@ const docTemplate = `{
         "course-service_internal_transport_http_v1_request.UpdateBank": {
             "type": "object",
             "properties": {
-                "course_id": {
-                    "type": "integer"
-                },
                 "description": {
                     "type": "string"
                 },
                 "title": {
                     "type": "string"
+                },
+                "userId": {
+                    "type": "integer"
                 }
             }
         },
@@ -2819,16 +3294,16 @@ const docTemplate = `{
                         "$ref": "#/definitions/course-service_internal_transport_http_v1_request.BankAnswer"
                     }
                 },
-                "bank_id": {
+                "bankId": {
                     "type": "integer"
                 },
-                "default_points": {
+                "defaultPoints": {
                     "type": "integer"
                 },
-                "question_text": {
+                "questionText": {
                     "type": "string"
                 },
-                "question_type": {
+                "questionType": {
                     "type": "integer"
                 }
             }
@@ -2836,30 +3311,42 @@ const docTemplate = `{
         "course-service_internal_transport_http_v1_request.UpdateCourse": {
             "type": "object",
             "properties": {
+                "coverImageId": {
+                    "type": "string",
+                    "example": "550e8400-e29b-41d4-a716-446655440000"
+                },
                 "description": {
                     "type": "string"
                 },
                 "ownerUserId": {
-                    "type": "integer"
+                    "type": "integer",
+                    "example": 42
                 },
                 "status": {
-                    "type": "integer"
+                    "description": "0 — Draft, 1 — Active",
+                    "type": "integer",
+                    "enum": [
+                        0,
+                        1
+                    ],
+                    "example": 1
                 },
                 "title": {
-                    "type": "string"
+                    "type": "string",
+                    "example": "Advanced Calculus"
                 }
             }
         },
         "course-service_internal_transport_http_v1_request.UpdateCourseSection": {
             "type": "object",
             "properties": {
-                "course_id": {
+                "courseId": {
                     "type": "integer"
                 },
-                "parent_id": {
+                "parentId": {
                     "type": "integer"
                 },
-                "sort_order": {
+                "sortOrder": {
                     "type": "integer"
                 },
                 "title": {
@@ -2870,16 +3357,16 @@ const docTemplate = `{
         "course-service_internal_transport_http_v1_request.UpdateCourseSectionItem": {
             "type": "object",
             "properties": {
-                "is_published": {
+                "isPublished": {
                     "type": "boolean"
                 },
-                "item_type": {
+                "itemType": {
                     "type": "string"
                 },
-                "section_id": {
+                "sectionId": {
                     "type": "integer"
                 },
-                "sort_order": {
+                "sortOrder": {
                     "type": "integer"
                 },
                 "title": {
@@ -2890,50 +3377,62 @@ const docTemplate = `{
         "course-service_internal_transport_http_v1_request.UpdateTest": {
             "type": "object",
             "properties": {
-                "available_from": {
-                    "type": "string"
+                "availableFrom": {
+                    "type": "string",
+                    "example": "2026-06-01T09:00:00Z"
                 },
-                "available_to": {
-                    "type": "string"
+                "availableTo": {
+                    "type": "string",
+                    "example": "2026-06-30T23:59:59Z"
                 },
-                "bank_ids": {
+                "bankIds": {
                     "type": "array",
                     "items": {
                         "type": "integer"
-                    }
+                    },
+                    "example": [
+                        1,
+                        2
+                    ]
                 },
-                "course_id": {
-                    "type": "integer"
+                "courseId": {
+                    "type": "integer",
+                    "example": 1
                 },
-                "course_section_id": {
-                    "type": "integer"
+                "courseSectionItemId": {
+                    "type": "integer",
+                    "example": 15
                 },
                 "description": {
-                    "type": "string"
+                    "type": "string",
+                    "example": "Updated description"
                 },
-                "duration_seconds": {
-                    "type": "integer"
+                "durationSeconds": {
+                    "type": "integer",
+                    "example": 3600
                 },
-                "generation_settings": {
-                    "type": "array",
-                    "items": {
-                        "type": "integer"
-                    }
+                "generationSettings": {
+                    "$ref": "#/definitions/course-service_internal_domain.TestGenerationSettings"
                 },
                 "id": {
-                    "type": "integer"
+                    "type": "integer",
+                    "example": 10
                 },
-                "max_attempts": {
-                    "type": "integer"
+                "maxAttempts": {
+                    "type": "integer",
+                    "example": 3
                 },
-                "max_score": {
-                    "type": "integer"
+                "maxScore": {
+                    "type": "integer",
+                    "example": 100
                 },
-                "questions_count": {
-                    "type": "integer"
+                "questionsCount": {
+                    "type": "integer",
+                    "example": 20
                 },
                 "title": {
-                    "type": "string"
+                    "type": "string",
+                    "example": "Midterm Exam (updated)"
                 }
             }
         },
@@ -2952,11 +3451,11 @@ const docTemplate = `{
 // SwaggerInfo holds exported Swagger Info so clients can modify it
 var SwaggerInfo = &swag.Spec{
 	Version:          "1.0",
-	Host:             "localhost:8080",
+	Host:             "localhost:10001",
 	BasePath:         "/cs/v1",
 	Schemes:          []string{"http"},
 	Title:            "Course Service API",
-	Description:      "REST API for courses, sections, assignments, question banks and tests.\nTests are also available under `/api` (same handlers as `/cs/v1`).",
+	Description:      "REST API for courses, sections, assignments, question banks and tests.\nCourses: list/stats use query `user_id` until JWT is enabled. Course status: 0 — Draft, 1 — Active.\nCover image changes publish Kafka events on topic `file-topic` (FileLoadedEvent / FileDeletedEvent).\nTests are also available under `/api` (same handlers as `/cs/v1`).",
 	InfoInstanceName: "swagger",
 	SwaggerTemplate:  docTemplate,
 	LeftDelim:        "{{",

@@ -6,7 +6,6 @@ import (
 
 	"github.com/samber/lo"
 
-	"course-service/internal/domain"
 	"course-service/internal/services/bankquestions"
 	"course-service/internal/transport/http/utils"
 	"course-service/internal/transport/http/v1/request"
@@ -19,35 +18,32 @@ import (
 func (h *Handler) NewBankQuestionsRoutes(router fiber.Router) {
 	qGroup := router.Group("bank_questions")
 
-	// qGroup.Post("/", h.createBankQuestion)
 	qGroup.Post("/bulk", h.bulkCreateBankQuestion)
 	qGroup.Put("/:id/bulk", h.bulkUpdateBankQuestion)
-	// qGroup.Put("/:id", h.updateBankQuestion)
 	qGroup.Get("/", h.getBankQuestionsList)
-	qGroup.Post("/generate", h.generateBankQuestions)
+	qGroup.Post("/", h.createBankQuestion)
+	qGroup.Put("/:id", h.updateBankQuestion)
+	qGroup.Delete("/:id", h.deleteBankQuestion)
 }
 
+// createBankQuestion godoc
+//
+//	@Summary	Create bank question
+//	@Tags		bank-questions
+//	@Accept		json
+//	@Produce	json
+//	@Param		body	body		request.CreateBankQuestion	true	"Question"
+//	@Success	201		{object}	domain.BankQuestion
+//	@Failure	400		{object}	ErrorResponse
+//	@Failure	500		{object}	ErrorResponse
+//	@Router		/bank_questions [post]
 func (h *Handler) createBankQuestion(ctx fiber.Ctx) error {
 	var req request.CreateBankQuestion
 	if err := json.Unmarshal(ctx.Body(), &req); err != nil {
 		return fiber.NewError(fiber.StatusBadRequest, err.Error())
 	}
 
-	answers := make([]bankquestions.BankAnswerDTO, 0, len(req.Answers))
-	for _, a := range req.Answers {
-		answers = append(answers, bankquestions.BankAnswerDTO{
-			AnswerText: a.AnswerText,
-			IsCorrect:  a.IsCorrect,
-		})
-	}
-
-	question, err := h.bankQuestionsService.Create(ctx.Context(), bankquestions.CreateServiceParams{
-		QuestionText:  req.QuestionText,
-		QuestionType:  domain.QuestionType(req.QuestionType),
-		DefaultPoints: req.DefaultPoints,
-		BankId:        req.BankId,
-		Answers:       answers,
-	})
+	question, err := h.bankQuestionsService.Create(ctx.Context(), req.ToService())
 	if err != nil {
 		return fiber.NewError(fiber.StatusInternalServerError, err.Error())
 	}
@@ -99,6 +95,18 @@ func (h *Handler) bulkCreateBankQuestion(ctx fiber.Ctx) error {
 	return nil
 }
 
+// updateBankQuestion godoc
+//
+//	@Summary	Update bank question
+//	@Tags		bank-questions
+//	@Accept		json
+//	@Produce	json
+//	@Param		id		path		int							true	"Question ID"
+//	@Param		body	body		request.UpdateBankQuestion	true	"Question"
+//	@Success	200		{object}	domain.BankQuestion
+//	@Failure	400		{object}	ErrorResponse
+//	@Failure	500		{object}	ErrorResponse
+//	@Router		/bank_questions/{id} [put]
 func (h *Handler) updateBankQuestion(ctx fiber.Ctx) error {
 	id, err := utils.GetInt64Param(ctx, "id")
 	if err != nil {
@@ -110,22 +118,7 @@ func (h *Handler) updateBankQuestion(ctx fiber.Ctx) error {
 		return fiber.NewError(fiber.StatusBadRequest, err.Error())
 	}
 
-	answers := make([]bankquestions.BankAnswerDTO, 0, len(req.Answers))
-	for _, a := range req.Answers {
-		answers = append(answers, bankquestions.BankAnswerDTO{
-			AnswerText: a.AnswerText,
-			IsCorrect:  a.IsCorrect,
-		})
-	}
-
-	question, err := h.bankQuestionsService.Update(ctx.Context(), bankquestions.UpdateServiceParams{
-		ID:            id,
-		QuestionText:  req.QuestionText,
-		QuestionType:  domain.QuestionType(req.QuestionType),
-		DefaultPoints: req.DefaultPoints,
-		BankId:        req.BankId,
-		Answers:       answers,
-	})
+	question, err := h.bankQuestionsService.Update(ctx.Context(), req.ToService(id))
 	if err != nil {
 		return fiber.NewError(fiber.StatusInternalServerError, err.Error())
 	}
@@ -169,7 +162,7 @@ func (h *Handler) bulkUpdateBankQuestion(ctx fiber.Ctx) error {
 		bankquestions.BulkUpdateServiceParams{
 			Id: id,
 			Questions: lo.Map(req.Questions, func(item request.UpdateBankQuestion, _ int) bankquestions.UpdateServiceParams {
-				return item.ToService()
+				return item.ToService(0)
 			}),
 		},
 	)
@@ -184,15 +177,45 @@ func (h *Handler) bulkUpdateBankQuestion(ctx fiber.Ctx) error {
 	return nil
 }
 
+// deleteBankQuestion godoc
+//
+//	@Summary	Delete bank question
+//	@Tags		bank-questions
+//	@Param		id	path	int	true	"Question ID"
+//	@Success	200
+//	@Failure	400	{object}	ErrorResponse
+//	@Failure	500	{object}	ErrorResponse
+//	@Router		/bank_questions/{id} [delete]
+func (h *Handler) deleteBankQuestion(ctx fiber.Ctx) error {
+	id, err := utils.GetInt64Param(ctx, "id")
+	if err != nil {
+		return fiber.NewError(fiber.StatusBadRequest, err.Error())
+	}
+
+	if err = h.bankQuestionsService.Delete(ctx.Context(), id); err != nil {
+		return fiber.NewError(fiber.StatusInternalServerError, err.Error())
+	}
+
+	if err = ctx.SendStatus(http.StatusOK); err != nil {
+		return fiber.NewError(fiber.StatusInternalServerError, err.Error())
+	}
+
+	return nil
+}
+
 // getBankQuestionsList godoc
 //
 //	@Summary	List bank questions
 //	@Tags		bank-questions
 //	@Produce	json
-//	@Param		bank_id	query		int	true	"Bank ID"
-//	@Success	200		{array}		domain.BankQuestion
-//	@Failure	400		{object}	ErrorResponse
-//	@Failure	500		{object}	ErrorResponse
+//	@Param		bank_id			query		int		true	"Bank ID"
+//	@Param		limit			query		int		true	"Page size"
+//	@Param		offset			query		int		true	"Page offset"
+//	@Param		question_type	query		string	false	"Filter by question type"	Enums(SINGLE,MULTIPLE,TEXT)
+//	@Param		filter			query		string	false	"Filter by question text (substring, case-insensitive)"
+//	@Success	200				{object}	domain.BankQuestionsListResponse
+//	@Failure	400				{object}	ErrorResponse
+//	@Failure	500				{object}	ErrorResponse
 //	@Router		/bank_questions [get]
 func (h *Handler) getBankQuestionsList(ctx fiber.Ctx) error {
 	bankId, err := utils.GetInt64Query(ctx, "bank_id")
@@ -200,14 +223,37 @@ func (h *Handler) getBankQuestionsList(ctx fiber.Ctx) error {
 		return fiber.NewError(fiber.StatusBadRequest, err.Error())
 	}
 
-	list, err := h.bankQuestionsService.GetList(ctx.Context(), bankquestions.GetListServiceParams{
-		BankId: &bankId,
-	})
+	limit, err := utils.GetInt64Query(ctx, "limit")
+	if err != nil {
+		return fiber.NewError(fiber.StatusBadRequest, err.Error())
+	}
+
+	offset, err := utils.GetInt64Query(ctx, "offset")
+	if err != nil {
+		return fiber.NewError(fiber.StatusBadRequest, err.Error())
+	}
+
+	params := bankquestions.GetListServiceParams{
+		BankId: bankId,
+		Limit:  limit,
+		Offset: offset,
+	}
+
+	if questionType := ctx.Query("question_type"); questionType != "" {
+		params.Type = &questionType
+	}
+
+	filter := ctx.Query("filter")
+	if filter != "" {
+		params.Filter = &filter
+	}
+
+	response, err := h.bankQuestionsService.GetList(ctx.Context(), params)
 	if err != nil {
 		return fiber.NewError(fiber.StatusInternalServerError, err.Error())
 	}
 
-	bytes, err := json.Marshal(list)
+	bytes, err := json.Marshal(response)
 	if err != nil {
 		return fiber.NewError(fiber.StatusInternalServerError, err.Error())
 	}
@@ -216,15 +262,5 @@ func (h *Handler) getBankQuestionsList(ctx fiber.Ctx) error {
 		return fiber.NewError(fiber.StatusInternalServerError, err.Error())
 	}
 
-	return nil
-}
-
-// generateBankQuestions godoc
-//
-//	@Summary	Generate bank questions (stub)
-//	@Tags		bank-questions
-//	@Success	200
-//	@Router		/bank_questions/generate [post]
-func (h *Handler) generateBankQuestions(ctx fiber.Ctx) error {
 	return nil
 }

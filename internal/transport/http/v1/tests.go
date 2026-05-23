@@ -29,14 +29,16 @@ func (h *Handler) NewTestsRoutes(router fiber.Router) {
 	router.Get("/attempts/:attempt_id", h.getAttemptState)
 	router.Put("/attempts/:attempt_id/answers", h.saveAttemptAnswer)
 	router.Post("/attempts/:attempt_id/submit", h.submitAttempt)
+	router.Post("/attempts/:attempt_id/submit-answers", h.submitAttemptWithAnswers)
 }
 
 // getTestsList godoc
 //
 //	@Summary	List tests
+//	@Description	Returns tests for a course. Query course_id is optional; omit to get all tests.
 //	@Tags		tests
 //	@Produce	json
-//	@Param		course_id	query		int	false	"Filter by course ID"
+//	@Param		course_id	query		int	false	"Filter by course ID"	example(1)
 //	@Success	200			{array}		domain.Test
 //	@Failure	400			{object}	ErrorResponse
 //	@Failure	500			{object}	ErrorResponse
@@ -58,10 +60,11 @@ func (h *Handler) getTestsList(ctx fiber.Ctx) error {
 // createTest godoc
 //
 //	@Summary	Create test
+//	@Description	Creates a test linked to a course section item. generationSettings is a JSON object: {"shuffleQuestions":true,"difficultyLevels":[1,2,3]}. questionsCount is a top-level field on the test. bankIds lists question banks used for random question generation. Dates are RFC3339 (UTC recommended).
 //	@Tags		tests
 //	@Accept		json
 //	@Produce	json
-//	@Param		body	body		request.CreateTest	true	"Test"
+//	@Param		body	body		request.CreateTest	true	"Test payload"
 //	@Success	201		{object}	domain.Test
 //	@Failure	400		{object}	ErrorResponse
 //	@Failure	500		{object}	ErrorResponse
@@ -83,15 +86,15 @@ func (h *Handler) createTest(ctx fiber.Ctx) error {
 // updateTest godoc
 //
 //	@Summary	Update test
+//	@Description	Updates test fields. test_id can be passed in path or in body as id. Same body format as create.
 //	@Tags		tests
 //	@Accept		json
 //	@Produce	json
-//	@Param		test_id	path		int					false	"Test ID (path)"
-//	@Param		body	body		request.UpdateTest	true	"Test"
+//	@Param		test_id	path		int					false	"Test ID (path)"	example(10)
+//	@Param		body	body		request.UpdateTest	true	"Test payload"
 //	@Success	200		{object}	domain.Test
 //	@Failure	400		{object}	ErrorResponse
 //	@Failure	500		{object}	ErrorResponse
-//	@Router		/tests [put]
 //	@Router		/tests/{test_id} [put]
 func (h *Handler) updateTest(ctx fiber.Ctx) error {
 	var req request.UpdateTest
@@ -114,9 +117,10 @@ func (h *Handler) updateTest(ctx fiber.Ctx) error {
 // deleteTest godoc
 //
 //	@Summary	Delete test
+//	@Description	Deletes a test. Provide test_id in path or query.
 //	@Tags		tests
-//	@Param		test_id	query	int	false	"Test ID (query)"
-//	@Param		test_id	path	int	false	"Test ID (path)"
+//	@Param		test_id	query	int	false	"Test ID (query)"	example(10)
+//	@Param		test_id	path	int	false	"Test ID (path)"	example(10)
 //	@Success	204
 //	@Failure	400	{object}	ErrorResponse
 //	@Failure	500	{object}	ErrorResponse
@@ -138,10 +142,11 @@ func (h *Handler) deleteTest(ctx fiber.Ctx) error {
 // getTestInfo godoc
 //
 //	@Summary	Get test info with user attempts
+//	@Description	Returns test metadata and all attempts of the given user for this test.
 //	@Tags		tests
 //	@Produce	json
-//	@Param		test_id	path		int	true	"Test ID"
-//	@Param		user_id	query		int	true	"User ID"
+//	@Param		test_id	path		int	true	"Test ID"	example(10)
+//	@Param		user_id	query		int	true	"User ID"	example(42)
 //	@Success	200		{object}	domain.TestWithAttempts
 //	@Failure	400		{object}	ErrorResponse
 //	@Failure	500		{object}	ErrorResponse
@@ -167,12 +172,13 @@ func (h *Handler) getTestInfo(ctx fiber.Ctx) error {
 // startAttempt godoc
 //
 //	@Summary	Start test attempt
+//	@Description	Starts a new attempt. Optional limit/offset paginate questions in the response. Body: {"testId":10,"userId":42}.
 //	@Tags		attempts
 //	@Accept		json
 //	@Produce	json
-//	@Param		limit	query		int						false	"Questions page size"
-//	@Param		offset	query		int						false	"Questions page offset"
-//	@Param		body	body		request.StartAttempt	true	"Attempt"
+//	@Param		limit	query		int						false	"Questions page size"	example(10)
+//	@Param		offset	query		int						false	"Questions page offset"	example(0)
+//	@Param		body	body		request.StartAttempt	true	"Attempt start payload"
 //	@Success	201		{object}	domain.AttemptState
 //	@Failure	400		{object}	ErrorResponse
 //	@Router		/attempts [post]
@@ -207,11 +213,12 @@ func (h *Handler) startAttempt(ctx fiber.Ctx) error {
 // getAttemptState godoc
 //
 //	@Summary	Get attempt state
+//	@Description	Returns attempt metadata, remaining time, and paginated questions with answer options (without isCorrect). Each question may include saved response.
 //	@Tags		attempts
 //	@Produce	json
-//	@Param		attempt_id	path		int	true	"Attempt ID"
-//	@Param		limit		query		int	false	"Questions page size"
-//	@Param		offset		query		int	false	"Questions page offset"
+//	@Param		attempt_id	path		int	true	"Attempt ID"	example(200)
+//	@Param		limit		query		int	false	"Questions page size"	example(10)
+//	@Param		offset		query		int	false	"Questions page offset"	example(0)
 //	@Success	200			{object}	domain.AttemptState
 //	@Failure	400			{object}	ErrorResponse
 //	@Failure	500			{object}	ErrorResponse
@@ -246,10 +253,11 @@ func (h *Handler) getAttemptState(ctx fiber.Ctx) error {
 // saveAttemptAnswer godoc
 //
 //	@Summary	Save attempt answer
+//	@Description	Saves or updates an answer for one question. For SINGLE use selectedAnswerId; for MULTIPLE use selectedAnswerIds array; for TEXT use textResponse. See schemas SaveAttemptAnswerSingleExample, SaveAttemptAnswerMultipleExample, SaveAttemptAnswerTextExample.
 //	@Tags		attempts
 //	@Accept		json
-//	@Param		attempt_id	path	int							true	"Attempt ID"
-//	@Param		body		body	request.SaveAttemptAnswer	true	"Answer"
+//	@Param		attempt_id	path	int							true	"Attempt ID"	example(200)
+//	@Param		body		body	request.SaveAttemptAnswer	true	"Answer payload"
 //	@Success	204
 //	@Failure	400	{object}	ErrorResponse
 //	@Router		/attempts/{attempt_id}/answers [put]
@@ -274,9 +282,10 @@ func (h *Handler) saveAttemptAnswer(ctx fiber.Ctx) error {
 // submitAttempt godoc
 //
 //	@Summary	Submit attempt for grading
+//	@Description	Finishes the attempt and runs auto-grading for choice questions. Text questions may require manual grading (status NEEDS_GRADING).
 //	@Tags		attempts
 //	@Produce	json
-//	@Param		attempt_id	path		int	true	"Attempt ID"
+//	@Param		attempt_id	path		int	true	"Attempt ID"	example(200)
 //	@Success	200			{object}	domain.TestAttempt
 //	@Failure	400			{object}	ErrorResponse
 //	@Router		/attempts/{attempt_id}/submit [post]
@@ -294,14 +303,49 @@ func (h *Handler) submitAttempt(ctx fiber.Ctx) error {
 	return sendJSON(ctx, http.StatusOK, attempt)
 }
 
+// submitAttemptWithAnswers godoc
+//
+//	@Summary	Submit all answers and complete attempt
+//	@Description	Saves all provided answers and immediately submits the attempt for grading. Combines PUT /answers + POST /submit into a single call.
+//	@Tags		attempts
+//	@Accept		json
+//	@Produce	json
+//	@Param		attempt_id	path		int								true	"Attempt ID"	example(200)
+//	@Param		body		body		request.SubmitAttemptAnswers		true	"All answers"
+//	@Success	200			{object}	domain.TestAttempt
+//	@Failure	400			{object}	ErrorResponse
+//	@Router		/attempts/{attempt_id}/submit-answers [post]
+func (h *Handler) submitAttemptWithAnswers(ctx fiber.Ctx) error {
+	attemptID, err := utils.GetInt64Param(ctx, "attempt_id")
+	if err != nil {
+		return fiber.NewError(fiber.StatusBadRequest, err.Error())
+	}
+
+	var req request.SubmitAttemptAnswers
+	if err = json.Unmarshal(ctx.Body(), &req); err != nil {
+		return fiber.NewError(fiber.StatusBadRequest, err.Error())
+	}
+
+	attempt, err := h.testsService.SubmitWithAnswers(ctx.Context(), tests.SubmitWithAnswersServiceParams{
+		AttemptID: attemptID,
+		Answers:   req.ToService(attemptID),
+	})
+	if err != nil {
+		return fiber.NewError(fiber.StatusBadRequest, err.Error())
+	}
+
+	return sendJSON(ctx, http.StatusOK, attempt)
+}
+
 // getAttempts godoc
 //
 //	@Summary	List attempts
+//	@Description	Lists attempts with optional filters. status values: IN_PROGRESS, COMPLETED, NEEDS_GRADING.
 //	@Tags		attempts
 //	@Produce	json
-//	@Param		test_id	query		int		false	"Filter by test ID"
-//	@Param		user_id	query		int		false	"Filter by user ID"
-//	@Param		status	query		string	false	"Filter by status"
+//	@Param		test_id	query		int		false	"Filter by test ID"	example(10)
+//	@Param		user_id	query		int		false	"Filter by user ID"	example(42)
+//	@Param		status	query		string	false	"Filter by status"	Enums(IN_PROGRESS,COMPLETED,NEEDS_GRADING)	example(IN_PROGRESS)
 //	@Success	200		{array}		domain.TestAttempt
 //	@Failure	400		{object}	ErrorResponse
 //	@Failure	500		{object}	ErrorResponse
@@ -337,11 +381,12 @@ func (h *Handler) getAttempts(ctx fiber.Ctx) error {
 // getTestAttempts godoc
 //
 //	@Summary	List attempts for a test
+//	@Description	Lists attempts for a specific test. status values: IN_PROGRESS, COMPLETED, NEEDS_GRADING.
 //	@Tags		tests
 //	@Produce	json
-//	@Param		test_id	path		int		true	"Test ID"
-//	@Param		user_id	query		int		false	"Filter by user ID"
-//	@Param		status	query		string	false	"Filter by status"
+//	@Param		test_id	path		int		true	"Test ID"	example(10)
+//	@Param		user_id	query		int		false	"Filter by user ID"	example(42)
+//	@Param		status	query		string	false	"Filter by status"	Enums(IN_PROGRESS,COMPLETED,NEEDS_GRADING)	example(COMPLETED)
 //	@Success	200		{array}		domain.TestAttempt
 //	@Failure	400		{object}	ErrorResponse
 //	@Failure	500		{object}	ErrorResponse
@@ -377,12 +422,13 @@ func (h *Handler) getTestAttempts(ctx fiber.Ctx) error {
 // getTestAttemptState godoc
 //
 //	@Summary	Get attempt state within a test
+//	@Description	Same response as GET /attempts/{attempt_id}, but validates that the attempt belongs to the given test.
 //	@Tags		tests
 //	@Produce	json
-//	@Param		test_id		path		int	true	"Test ID"
-//	@Param		attempt_id	path		int	true	"Attempt ID"
-//	@Param		limit		query		int	false	"Questions page size"
-//	@Param		offset		query		int	false	"Questions page offset"
+//	@Param		test_id		path		int	true	"Test ID"	example(10)
+//	@Param		attempt_id	path		int	true	"Attempt ID"	example(200)
+//	@Param		limit		query		int	false	"Questions page size"	example(10)
+//	@Param		offset		query		int	false	"Questions page offset"	example(0)
 //	@Success	200			{object}	domain.AttemptState
 //	@Failure	400			{object}	ErrorResponse
 //	@Failure	404			{object}	ErrorResponse
@@ -424,12 +470,13 @@ func (h *Handler) getTestAttemptState(ctx fiber.Ctx) error {
 // gradeAttempt godoc
 //
 //	@Summary	Grade attempt manually
+//	@Description	Assigns scores to text (or other manually graded) questions. Body: {"scores":[{"attemptQuestionId":501,"scoreAwarded":8,"instructorComment":"Partially correct"}]}.
 //	@Tags		tests
 //	@Accept		json
 //	@Produce	json
-//	@Param		test_id		path		int						true	"Test ID"
-//	@Param		attempt_id	path		int						true	"Attempt ID"
-//	@Param		body		body		request.GradeAttempt	true	"Scores"
+//	@Param		test_id		path		int						true	"Test ID"	example(10)
+//	@Param		attempt_id	path		int						true	"Attempt ID"	example(200)
+//	@Param		body		body		request.GradeAttempt	true	"Manual scores"
 //	@Success	200			{object}	domain.TestAttempt
 //	@Failure	400			{object}	ErrorResponse
 //	@Failure	404			{object}	ErrorResponse

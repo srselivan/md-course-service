@@ -15,6 +15,7 @@ import (
 	coursesectionsservice "course-service/internal/services/coursesections"
 	testsservice "course-service/internal/services/tests"
 	"course-service/internal/transport/http"
+	"course-service/pkg/kafka"
 	"course-service/pkg/logger"
 	"course-service/pkg/postgres"
 
@@ -51,7 +52,19 @@ func main() {
 		log.Fatal().Err(err).Msg("failed to connect to postgres")
 	}
 
-	coursesService := coursesservice.NewService(coursesservice.NewRepository(postgresConn), log)
+	var kafkaProducer *kafka.Producer
+	if len(cfg.Kafka.Brokers) > 0 {
+		kafkaProducer, err = kafka.NewProducer(kafka.ProducerConfig{
+			Brokers: cfg.Kafka.Brokers,
+			Logger:  log,
+		})
+		if err != nil {
+			log.Fatal().Err(err).Msg("failed to create kafka producer")
+		}
+	}
+
+	filesClient := coursesservice.NewFilesClient(kafkaProducer, log)
+	coursesService := coursesservice.NewService(coursesservice.NewRepository(postgresConn), filesClient, log)
 	courseSectionsService := coursesectionsservice.NewService(coursesectionsservice.NewRepository(postgresConn), log)
 	courseSectionItemsService := coursesectionitemsservice.NewService(coursesectionitemsservice.NewRepository(postgresConn), log)
 	banksService := banksservice.NewService(banksservice.NewRepository(postgresConn), log)
@@ -90,6 +103,11 @@ func main() {
 	<-quit
 	cancel()
 	log.Info().Msg("shutting down course service...")
+
+	if kafkaProducer != nil {
+		kafkaProducer.Close()
+		log.Info().Msg("kafka producer closed")
+	}
 
 	if err = postgresConn.Close(); err != nil {
 		log.Error().Err(err).Msg("failed to close postgres connection")

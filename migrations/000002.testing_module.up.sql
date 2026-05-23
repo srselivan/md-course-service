@@ -1,22 +1,22 @@
 create table tests
 (
-    id                  bigserial primary key,
-    course_id           bigint                   not null references course (id) on delete cascade,
-    course_section_id   bigint                   not null references course_section (id) on delete cascade,
-    title               text                     not null,
-    description         text                     not null,
-    available_from      timestamp with time zone not null,
-    available_to        timestamp with time zone not null,
-    duration_seconds    integer                  not null check (duration_seconds > 0),
-    max_attempts        integer                  not null default 1 check (max_attempts > 0),
-    max_score           integer                  not null default 0 check (max_score >= 0),
-    questions_count     integer                  not null check (questions_count > 0),
-    generation_settings jsonb                    not null default '{}'::jsonb,
-    created_at          timestamp with time zone not null default current_timestamp,
-    bank_ids            bigint[]                 not null
+    id                      bigserial primary key,
+    course_id               bigint                   not null references course (id) on delete cascade,
+    course_section_item_id  bigint                   not null references course_section_item (id) on delete cascade,
+    title                   text                     not null,
+    description             text                     not null,
+    available_from          timestamp with time zone not null,
+    available_to            timestamp with time zone not null,
+    duration_seconds        integer                  not null check (duration_seconds > 0),
+    max_attempts            integer                  not null default 1 check (max_attempts > 0),
+    max_score               integer                  not null default 0 check (max_score >= 0),
+    questions_count         integer                  not null check (questions_count > 0),
+    generation_settings     jsonb                    not null default '{}'::jsonb,
+    created_at              timestamp with time zone not null default current_timestamp,
+    bank_ids                bigint[]                 not null
 );
 create index tests_course_id_idx on tests (course_id);
-create index tests_course_section_id_idx on tests (course_section_id);
+create index tests_course_section_item_id_idx on tests (course_section_item_id);
 
 create table test_attempts
 (

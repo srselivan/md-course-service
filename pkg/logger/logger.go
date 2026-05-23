@@ -40,6 +40,10 @@ func New(cfg Config) (*zerolog.Logger, error) {
 	return &logger, nil
 }
 
+func IsTrace(logger *zerolog.Logger) bool {
+	return logger.GetLevel() <= zerolog.TraceLevel
+}
+
 func openOrCreateLogFile(filepath string, filename string) (*os.File, error) {
 	if _, err := os.Stat(filepath); os.IsNotExist(err) {
 		if err = os.Mkdir(filepath, 0777); err != nil {

@@ -3,19 +3,22 @@ package domain
 import "time"
 
 type BankQuestion struct {
-	ID            int64        `json:"id"`
-	BankId        int64        `json:"bank_id"`
-	QuestionText  string       `json:"question_text"`
-	QuestionType  QuestionType `json:"question_type"`
-	DefaultPoints int          `json:"default_points"`
-	CreatedAt     time.Time    `json:"created_at"`
-	Answers       []BankAnswer `json:"answers"`
+	ID        int64               `json:"id"`
+	BankId    int64               `json:"bankId"`
+	Text      string              `json:"text"`
+	Type      TestingQuestionType `json:"type"`
+	Points    int                 `json:"points"`
+	CreatedAt time.Time           `json:"createdAt"`
+	Answers   []BankAnswer        `json:"answers"`
 }
 
-type QuestionType int16
+type BankQuestionsListMeta struct {
+	Total  int64 `json:"total"`
+	Limit  int64 `json:"limit"`
+	Offset int64 `json:"offset"`
+}
 
-const (
-	QuestionTypeSingleChoice QuestionType = iota
-	QuestionTypeMultipleChoice
-	QuestionTypeText
-)
+type BankQuestionsListResponse struct {
+	Meta BankQuestionsListMeta `json:"meta"`
+	Data []BankQuestion        `json:"data"`
+}

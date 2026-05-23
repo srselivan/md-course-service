@@ -11,6 +11,7 @@ import (
 	"course-service/internal/services/coursesectionitems"
 	"course-service/internal/services/coursesections"
 	testsservice "course-service/internal/services/tests"
+	httpmiddleware "course-service/internal/transport/http/middleware"
 	v1 "course-service/internal/transport/http/v1"
 
 	"github.com/gofiber/fiber/v3"
@@ -24,6 +25,7 @@ type coursesService interface {
 	Delete(ctx context.Context, id int64) error
 	Get(ctx context.Context, id int64) (domain.Course, error)
 	GetList(ctx context.Context, params courses.GetListServiceParams) ([]domain.Course, error)
+	GetStats(ctx context.Context, params courses.GetStatsServiceParams) (domain.CoursesStatsResponse, error)
 	GetWithAllItems(ctx context.Context, params courses.GetWithAllItemsParams) (domain.CourseWithItems, error)
 }
 
@@ -67,9 +69,10 @@ type banksService interface {
 type bankQuestionsService interface {
 	Create(ctx context.Context, params bankquestions.CreateServiceParams) (domain.BankQuestion, error)
 	Update(ctx context.Context, params bankquestions.UpdateServiceParams) (domain.BankQuestion, error)
+	Delete(ctx context.Context, id int64) error
 	BulkCreate(ctx context.Context, params bankquestions.BulkCreateServiceParams) error
 	BulkUpdate(ctx context.Context, params bankquestions.BulkUpdateServiceParams) error
-	GetList(ctx context.Context, params bankquestions.GetListServiceParams) ([]domain.BankQuestion, error)
+	GetList(ctx context.Context, params bankquestions.GetListServiceParams) (domain.BankQuestionsListResponse, error)
 }
 
 type testsService interface {
@@ -83,6 +86,7 @@ type testsService interface {
 	GetAttemptState(ctx context.Context, params testsservice.GetAttemptStateServiceParams) (domain.AttemptState, error)
 	SaveAnswer(ctx context.Context, params testsservice.SaveAnswerServiceParams) error
 	SubmitAttempt(ctx context.Context, attemptID int64) (domain.TestAttempt, error)
+	SubmitWithAnswers(ctx context.Context, params testsservice.SubmitWithAnswersServiceParams) (domain.TestAttempt, error)
 	GradeAttempt(ctx context.Context, params testsservice.GradeAttemptServiceParams) (domain.TestAttempt, error)
 }
 
@@ -102,8 +106,10 @@ type Config struct {
 //	@title			Course Service API
 //	@version		1.0
 //	@description	REST API for courses, sections, assignments, question banks and tests.
+//	@description	Courses: list/stats use query `user_id` until JWT is enabled. Course status: 0 — Draft, 1 — Active.
+//	@description	Cover image changes publish Kafka events on topic `file-topic` (FileLoadedEvent / FileDeletedEvent).
 //	@description	Tests are also available under `/api` (same handlers as `/cs/v1`).
-//	@host			localhost:8080
+//	@host			localhost:10001
 //	@BasePath		/cs/v1
 //	@schemes		http
 
@@ -158,6 +164,7 @@ func (s *Server) init() {
 	registerSwagger(s.app)
 
 	apiGroup := s.app.Group("/cs")
+	apiGroup.Use(httpmiddleware.JSONContentType())
 	apiGroup.Use(logger.New())
 
 	v1Group := apiGroup.Group("/v1")
@@ -184,5 +191,6 @@ func (s *Server) init() {
 	}
 
 	apiCompatGroup := s.app.Group("/api")
+	apiCompatGroup.Use(httpmiddleware.JSONContentType())
 	v1Handler.NewTestsRoutes(apiCompatGroup)
 }

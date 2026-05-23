@@ -9,54 +9,55 @@ import (
 
 type (
 	CreateBankQuestion struct {
-		QuestionText  string       `json:"question_text"`
-		QuestionType  int16        `json:"question_type"`
-		DefaultPoints int          `json:"default_points"`
-		BankId        int64        `json:"bank_id"`
-		Answers       []BankAnswer `json:"answers"`
+		Text    string                     `json:"text" example:"What is 2+2?"`
+		Type    domain.TestingQuestionType `json:"type" example:"SINGLE" enums:"SINGLE,MULTIPLE,TEXT"`
+		Points  int                        `json:"points" example:"5"`
+		BankId  int64                      `json:"bankId" example:"1"`
+		Answers []BankAnswerRequest        `json:"answers"`
 	}
 	BulkCreateBankQuestion struct {
 		Questions []CreateBankQuestion `json:"questions"`
 	}
 	UpdateBankQuestion struct {
-		QuestionText  string       `json:"question_text"`
-		QuestionType  int16        `json:"question_type"`
-		DefaultPoints int          `json:"default_points"`
-		BankId        int64        `json:"bank_id"`
-		Answers       []BankAnswer `json:"answers"`
+		Text    string                     `json:"text" example:"What is 2+2?"`
+		Type    domain.TestingQuestionType `json:"type" example:"SINGLE" enums:"SINGLE,MULTIPLE,TEXT"`
+		Points  int                        `json:"points" example:"5"`
+		BankId  int64                      `json:"bankId" example:"1"`
+		Answers []BankAnswerRequest        `json:"answers"`
 	}
 	BulkUpdateBankQuestion struct {
 		Questions []UpdateBankQuestion `json:"questions"`
 	}
-	BankAnswer struct {
-		AnswerText string `json:"answer_text"`
-		IsCorrect  bool   `json:"is_correct"`
+	BankAnswerRequest struct {
+		Text      string `json:"text" example:"4"`
+		IsCorrect bool   `json:"isCorrect" example:"true"`
 	}
 )
 
 func (cbq CreateBankQuestion) ToService() bankquestions.CreateServiceParams {
 	return bankquestions.CreateServiceParams{
-		QuestionText:  cbq.QuestionText,
-		QuestionType:  domain.QuestionType(cbq.QuestionType),
-		DefaultPoints: cbq.DefaultPoints,
-		BankId:        cbq.BankId,
-		Answers:       lo.Map(cbq.Answers, func(item BankAnswer, _ int) bankquestions.BankAnswerDTO { return item.ToService() }),
+		Text:    cbq.Text,
+		Type:    cbq.Type,
+		Points:  cbq.Points,
+		BankId:  cbq.BankId,
+		Answers: lo.Map(cbq.Answers, func(item BankAnswerRequest, _ int) bankquestions.BankAnswerDTO { return item.ToService() }),
 	}
 }
 
-func (cbq UpdateBankQuestion) ToService() bankquestions.UpdateServiceParams {
+func (cbq UpdateBankQuestion) ToService(id int64) bankquestions.UpdateServiceParams {
 	return bankquestions.UpdateServiceParams{
-		QuestionText:  cbq.QuestionText,
-		QuestionType:  domain.QuestionType(cbq.QuestionType),
-		DefaultPoints: cbq.DefaultPoints,
-		BankId:        cbq.BankId,
-		Answers:       lo.Map(cbq.Answers, func(item BankAnswer, _ int) bankquestions.BankAnswerDTO { return item.ToService() }),
+		ID:      id,
+		Text:    cbq.Text,
+		Type:    cbq.Type,
+		Points:  cbq.Points,
+		BankId:  cbq.BankId,
+		Answers: lo.Map(cbq.Answers, func(item BankAnswerRequest, _ int) bankquestions.BankAnswerDTO { return item.ToService() }),
 	}
 }
 
-func (ba BankAnswer) ToService() bankquestions.BankAnswerDTO {
+func (ba BankAnswerRequest) ToService() bankquestions.BankAnswerDTO {
 	return bankquestions.BankAnswerDTO{
-		AnswerText: ba.AnswerText,
-		IsCorrect:  ba.IsCorrect,
+		Text:      ba.Text,
+		IsCorrect: ba.IsCorrect,
 	}
 }

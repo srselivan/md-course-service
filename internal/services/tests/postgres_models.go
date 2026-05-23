@@ -3,42 +3,44 @@ package tests
 import (
 	"time"
 
+	"github.com/lib/pq"
+
 	"course-service/internal/domain"
 )
 
 type testModel struct {
-	ID                 int64        `db:"id"`
-	CourseID           int64        `db:"course_id"`
-	CourseSectionID    int64        `db:"course_section_id"`
-	Title              string       `db:"title"`
-	Description        string       `db:"description"`
-	AvailableFrom      time.Time    `db:"available_from"`
-	AvailableTo        time.Time    `db:"available_to"`
-	DurationSeconds    int64        `db:"duration_seconds"`
-	MaxAttempts        int          `db:"max_attempts"`
-	MaxScore           int          `db:"max_score"`
-	QuestionsCount     int          `db:"questions_count"`
-	GenerationSettings domain.JSONB `db:"generation_settings"`
-	CreatedAt          time.Time    `db:"created_at"`
-	BankIDs            []int64      `db:"bank_ids"`
+	ID                  int64         `db:"id"`
+	CourseID            int64         `db:"course_id"`
+	CourseSectionItemID int64         `db:"course_section_item_id"`
+	Title               string        `db:"title"`
+	Description         string        `db:"description"`
+	AvailableFrom       time.Time     `db:"available_from"`
+	AvailableTo         time.Time     `db:"available_to"`
+	DurationSeconds     int64         `db:"duration_seconds"`
+	MaxAttempts         int           `db:"max_attempts"`
+	MaxScore            int           `db:"max_score"`
+	QuestionsCount      int           `db:"questions_count"`
+	GenerationSettings  domain.JSONB  `db:"generation_settings"`
+	CreatedAt           time.Time     `db:"created_at"`
+	BankIDs             pq.Int64Array `db:"bank_ids"`
 }
 
 func (m testModel) toDomain() domain.Test {
 	return domain.Test{
-		ID:                 m.ID,
-		CourseID:           m.CourseID,
-		CourseSectionID:    m.CourseSectionID,
-		Title:              m.Title,
-		Description:        m.Description,
-		AvailableFrom:      m.AvailableFrom,
-		AvailableTo:        m.AvailableTo,
-		DurationSeconds:    m.DurationSeconds,
-		MaxAttempts:        m.MaxAttempts,
-		MaxScore:           m.MaxScore,
-		QuestionsCount:     m.QuestionsCount,
-		GenerationSettings: m.GenerationSettings,
-		CreatedAt:          m.CreatedAt,
-		BankIDs:            m.BankIDs,
+		ID:                  m.ID,
+		CourseID:            m.CourseID,
+		CourseSectionItemID: m.CourseSectionItemID,
+		Title:               m.Title,
+		Description:         m.Description,
+		AvailableFrom:       m.AvailableFrom,
+		AvailableTo:         m.AvailableTo,
+		DurationSeconds:     m.DurationSeconds,
+		MaxAttempts:         m.MaxAttempts,
+		MaxScore:            m.MaxScore,
+		QuestionsCount:      m.QuestionsCount,
+		GenerationSettings:  m.GenerationSettings,
+		CreatedAt:           m.CreatedAt,
+		BankIDs:             m.BankIDs,
 	}
 }
 
@@ -127,30 +129,19 @@ type attemptAnswerModel struct {
 }
 
 type bankQuestionRow struct {
-	ID            int64  `db:"id"`
-	BankID        int64  `db:"bank_id"`
-	QuestionType  int16  `db:"question_type"`
-	QuestionText  string `db:"question_text"`
-	DefaultPoints int    `db:"default_points"`
+	ID     int64  `db:"id"`
+	BankID int64  `db:"bank_id"`
+	Type   string `db:"type"`
+	Text   string `db:"text"`
+	Points int    `db:"points"`
 }
 
 func (q bankQuestionRow) toDomainQuestion() domain.Question {
 	return domain.Question{
 		ID:     q.ID,
 		BankID: q.BankID,
-		Type:   toTestingQuestionType(domain.QuestionType(q.QuestionType)),
-		Text:   q.QuestionText,
-		Points: q.DefaultPoints,
-	}
-}
-
-func toTestingQuestionType(questionType domain.QuestionType) domain.TestingQuestionType {
-	switch questionType {
-	case domain.QuestionTypeMultipleChoice:
-		return domain.TestingQuestionTypeMultiple
-	case domain.QuestionTypeText:
-		return domain.TestingQuestionTypeText
-	default:
-		return domain.TestingQuestionTypeSingle
+		Type:   domain.TestingQuestionType(q.Type),
+		Text:   q.Text,
+		Points: q.Points,
 	}
 }

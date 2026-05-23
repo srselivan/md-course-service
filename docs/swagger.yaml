@@ -2,33 +2,40 @@ basePath: /cs/v1
 definitions:
   course-service_internal_domain.Assignment:
     properties:
-      deadline_days:
+      deadlineDays:
         type: integer
       description:
         type: string
-      item_id:
+      itemId:
         type: integer
-      max_score:
+      maxScore:
         type: integer
     type: object
   course-service_internal_domain.AttemptAnswer:
     properties:
-      attempt_question_id:
+      attemptQuestionId:
+        example: 501
         type: integer
       id:
+        example: 601
         type: integer
-      selected_answer_id:
+      selectedAnswerId:
+        example: 1001
         type: integer
-      text_response:
+      textResponse:
+        example: The answer is 42
         type: string
     type: object
   course-service_internal_domain.AttemptPagination:
     properties:
       limit:
+        example: 10
         type: integer
       offset:
+        example: 0
         type: integer
       total:
+        example: 20
         type: integer
     type: object
   course-service_internal_domain.AttemptQuestionState:
@@ -37,30 +44,44 @@ definitions:
         items:
           $ref: '#/definitions/course-service_internal_domain.PublicQuestionAnswer'
         type: array
-      attempt_id:
+      attemptId:
+        example: 200
         type: integer
       id:
+        example: 501
         type: integer
-      instructor_comment:
+      instructorComment:
+        example: Correct
         type: string
-      order_index:
+      orderIndex:
+        example: 0
         type: integer
       points:
+        example: 5
         type: integer
       question:
         $ref: '#/definitions/course-service_internal_domain.Question'
-      question_id:
+      questionId:
+        example: 100
         type: integer
       response:
         items:
           $ref: '#/definitions/course-service_internal_domain.AttemptAnswer'
         type: array
-      score_awarded:
+      scoreAwarded:
+        example: 5
         type: integer
       text:
+        example: What is 2+2?
         type: string
       type:
-        $ref: '#/definitions/course-service_internal_domain.TestingQuestionType'
+        allOf:
+        - $ref: '#/definitions/course-service_internal_domain.TestingQuestionType'
+        enum:
+        - SINGLE
+        - MULTIPLE
+        - TEXT
+        example: SINGLE
     type: object
   course-service_internal_domain.AttemptState:
     properties:
@@ -72,33 +93,36 @@ definitions:
         items:
           $ref: '#/definitions/course-service_internal_domain.AttemptQuestionState'
         type: array
-      remaining_seconds:
+      remainingSeconds:
+        example: 2700
         type: integer
     type: object
   course-service_internal_domain.Bank:
     properties:
-      course_id:
-        type: integer
-      created_at:
+      createdAt:
         type: string
       description:
         type: string
       id:
         type: integer
+      questionsCount:
+        type: integer
       title:
         type: string
-      updated_at:
+      updatedAt:
         type: string
+      userId:
+        type: integer
     type: object
   course-service_internal_domain.BankAnswer:
     properties:
-      answer_text:
+      answerText:
         type: string
       id:
         type: integer
-      is_correct:
+      isCorrect:
         type: boolean
-      question_id:
+      questionId:
         type: integer
     type: object
   course-service_internal_domain.BankQuestion:
@@ -107,47 +131,76 @@ definitions:
         items:
           $ref: '#/definitions/course-service_internal_domain.BankAnswer'
         type: array
-      bank_id:
+      bankId:
         type: integer
-      created_at:
+      createdAt:
         type: string
-      default_points:
+      defaultPoints:
         type: integer
       id:
         type: integer
-      question_text:
+      questionText:
         type: string
-      question_type:
+      questionType:
         $ref: '#/definitions/course-service_internal_domain.QuestionType'
+    type: object
+  course-service_internal_domain.BankQuestionsListMeta:
+    properties:
+      limit:
+        type: integer
+      offset:
+        type: integer
+      total:
+        type: integer
+    type: object
+  course-service_internal_domain.BankQuestionsListResponse:
+    properties:
+      data:
+        items:
+          $ref: '#/definitions/course-service_internal_domain.BankQuestion'
+        type: array
+      meta:
+        $ref: '#/definitions/course-service_internal_domain.BankQuestionsListMeta'
     type: object
   course-service_internal_domain.Course:
     properties:
+      coverImageId:
+        example: 550e8400-e29b-41d4-a716-446655440000
+        type: string
       createdAt:
         type: string
       description:
         type: string
       id:
+        example: 1
         type: integer
       ownerUserId:
+        example: 42
         type: integer
       stats:
         $ref: '#/definitions/course-service_internal_domain.CourseStats'
       status:
+        description: 0 — Draft, 1 — Active
+        enum:
+        - 0
+        - 1
+        example: 0
         type: integer
       title:
+        example: Advanced Calculus
         type: string
       updatedAt:
         type: string
     type: object
   course-service_internal_domain.CourseSection:
     properties:
-      course_id:
+      courseId:
         type: integer
       id:
         type: integer
-      parent_id:
+      parentId:
         type: integer
-      sort_order:
+      sortOrder:
         type: integer
       title:
         type: string
@@ -155,21 +208,34 @@ definitions:
   course-service_internal_domain.CourseSectionItem:
     properties:
       id:
+        example: 10
         type: integer
-      is_published:
+      isPublished:
+        example: true
         type: boolean
-      item_type:
-        type: string
-      section_id:
+      itemId:
+        example: 100
         type: integer
-      sort_order:
+      itemType:
+        enum:
+        - lecture
+        - assignment
+        - test
+        example: test
+        type: string
+      sectionId:
+        example: 5
+        type: integer
+      sortOrder:
+        example: 1
         type: integer
       title:
+        example: Midterm
         type: string
     type: object
   course-service_internal_domain.CourseSectionWithItems:
     properties:
-      course_id:
+      courseId:
         type: integer
       id:
         type: integer
@@ -177,9 +243,9 @@ definitions:
         items:
           $ref: '#/definitions/course-service_internal_domain.CourseSectionItem'
         type: array
-      parent_id:
+      parentId:
         type: integer
-      sort_order:
+      sortOrder:
         type: integer
       title:
         type: string
@@ -187,17 +253,23 @@ definitions:
   course-service_internal_domain.CourseStats:
     properties:
       totalStudents:
+        example: 45
         type: integer
     type: object
   course-service_internal_domain.CourseWithItems:
     properties:
+      coverImageId:
+        example: 550e8400-e29b-41d4-a716-446655440000
+        type: string
       createdAt:
         type: string
       description:
         type: string
       id:
+        example: 1
         type: integer
       ownerUserId:
+        example: 42
         type: integer
       sections:
         items:
@@ -206,19 +278,37 @@ definitions:
       stats:
         $ref: '#/definitions/course-service_internal_domain.CourseStats'
       status:
+        description: 0 — Draft, 1 — Active
+        enum:
+        - 0
+        - 1
+        example: 0
         type: integer
       title:
+        example: Advanced Calculus
         type: string
       updatedAt:
         type: string
     type: object
+  course-service_internal_domain.CoursesStatsResponse:
+    properties:
+      activeCoursesCount:
+        example: 3
+        type: integer
+      totalStudents:
+        example: 120
+        type: integer
+    type: object
   course-service_internal_domain.PublicQuestionAnswer:
     properties:
       id:
+        example: 1001
         type: integer
-      question_id:
+      questionId:
+        example: 100
         type: integer
       text:
+        example: "4"
         type: string
     type: object
   course-service_internal_domain.Question:
@@ -227,28 +317,43 @@ definitions:
         items:
           $ref: '#/definitions/course-service_internal_domain.QuestionAnswer'
         type: array
-      bank_id:
+      bankId:
+        example: 1
         type: integer
-      difficulty_level:
+      difficultyLevel:
+        example: 2
         type: integer
       id:
+        example: 100
         type: integer
       points:
+        example: 5
         type: integer
       text:
+        example: What is 2+2?
         type: string
       type:
-        $ref: '#/definitions/course-service_internal_domain.TestingQuestionType'
+        allOf:
+        - $ref: '#/definitions/course-service_internal_domain.TestingQuestionType'
+        enum:
+        - SINGLE
+        - MULTIPLE
+        - TEXT
+        example: SINGLE
     type: object
   course-service_internal_domain.QuestionAnswer:
     properties:
       id:
+        example: 1001
         type: integer
-      is_correct:
+      isCorrect:
+        example: true
         type: boolean
-      question_id:
+      questionId:
+        example: 100
         type: integer
       text:
+        example: "4"
         type: string
     type: object
   course-service_internal_domain.QuestionType:
@@ -264,60 +369,93 @@ definitions:
     - QuestionTypeText
   course-service_internal_domain.Test:
     properties:
-      available_from:
+      availableFrom:
+        example: "2026-06-01T09:00:00Z"
         type: string
-      available_to:
+      availableTo:
+        example: "2026-06-30T23:59:59Z"
         type: string
-      bank_ids:
+      bankIds:
+        example:
+        - 1
+        - 2
         items:
           type: integer
         type: array
-      course_id:
+      courseId:
+        example: 1
         type: integer
-      course_section_id:
+      courseSectionItemId:
+        example: 15
         type: integer
-      created_at:
+      createdAt:
+        example: "2026-05-01T12:00:00Z"
         type: string
       description:
+        example: Final assessment for module 1
         type: string
-      duration_seconds:
+      durationSeconds:
+        example: 3600
         type: integer
-      generation_settings:
-        items:
-          type: integer
-        type: array
+      generationSettings:
+        type: object
       id:
+        example: 10
         type: integer
-      max_attempts:
+      maxAttempts:
+        example: 3
         type: integer
-      max_score:
+      maxScore:
+        example: 100
         type: integer
-      questions_count:
+      questionsCount:
+        example: 20
         type: integer
       title:
+        example: Midterm Exam
         type: string
     type: object
   course-service_internal_domain.TestAttempt:
     properties:
-      attempt_number:
+      attemptNumber:
+        example: 1
         type: integer
-      completed_at:
+      completedAt:
+        example: "2026-06-15T10:45:00Z"
         type: string
-      expires_at:
+      expiresAt:
+        example: "2026-06-15T11:00:00Z"
         type: string
-      grade_status:
-        $ref: '#/definitions/course-service_internal_domain.TestGradeStatus'
+      gradeStatus:
+        allOf:
+        - $ref: '#/definitions/course-service_internal_domain.TestGradeStatus'
+        enum:
+        - NONE
+        - READY
+        - PRE_GRADED
+        example: NONE
       id:
+        example: 200
         type: integer
-      started_at:
+      startedAt:
+        example: "2026-06-15T10:00:00Z"
         type: string
       status:
-        $ref: '#/definitions/course-service_internal_domain.TestAttemptStatus'
-      test_id:
+        allOf:
+        - $ref: '#/definitions/course-service_internal_domain.TestAttemptStatus'
+        enum:
+        - IN_PROGRESS
+        - COMPLETED
+        - NEEDS_GRADING
+        example: IN_PROGRESS
+      testId:
+        example: 10
         type: integer
-      total_score:
+      totalScore:
+        example: 85
         type: integer
-      user_id:
+      userId:
+        example: 42
         type: integer
     type: object
   course-service_internal_domain.TestAttemptStatus:
@@ -330,6 +468,20 @@ definitions:
     - TestAttemptStatusInProgress
     - TestAttemptStatusCompleted
     - TestAttemptStatusNeedsGrading
+  course-service_internal_domain.TestGenerationSettings:
+    properties:
+      difficultyLevels:
+        example:
+        - 1
+        - 2
+        - 3
+        items:
+          type: integer
+        type: array
+      shuffleQuestions:
+        example: true
+        type: boolean
+    type: object
   course-service_internal_domain.TestGradeStatus:
     enum:
     - NONE
@@ -361,9 +513,9 @@ definitions:
     - TestingQuestionTypeText
   course-service_internal_transport_http_v1_request.BankAnswer:
     properties:
-      answer_text:
+      answerText:
         type: string
-      is_correct:
+      isCorrect:
         type: boolean
     type: object
   course-service_internal_transport_http_v1_request.BulkCreateBankQuestion:
@@ -382,23 +534,23 @@ definitions:
     type: object
   course-service_internal_transport_http_v1_request.CreateAssignment:
     properties:
-      deadline_days:
+      deadlineDays:
         type: integer
       description:
         type: string
-      item_id:
+      itemId:
         type: integer
-      max_score:
+      maxScore:
         type: integer
     type: object
   course-service_internal_transport_http_v1_request.CreateBank:
     properties:
-      course_id:
-        type: integer
       description:
         type: string
       title:
         type: string
+      userId:
+        type: integer
     type: object
   course-service_internal_transport_http_v1_request.CreateBankQuestion:
     properties:
@@ -406,77 +558,93 @@ definitions:
         items:
           $ref: '#/definitions/course-service_internal_transport_http_v1_request.BankAnswer'
         type: array
-      bank_id:
+      bankId:
         type: integer
-      default_points:
+      defaultPoints:
         type: integer
-      question_text:
+      questionText:
         type: string
-      question_type:
+      questionType:
         type: integer
     type: object
   course-service_internal_transport_http_v1_request.CreateCourse:
     properties:
+      coverImageId:
+        example: 550e8400-e29b-41d4-a716-446655440000
+        type: string
       description:
         type: string
       ownerUserId:
+        example: 42
         type: integer
       title:
+        example: Advanced Calculus
         type: string
     type: object
   course-service_internal_transport_http_v1_request.CreateCourseSection:
     properties:
-      course_id:
+      courseId:
         type: integer
-      parent_id:
+      parentId:
         type: integer
-      sort_order:
+      sortOrder:
         type: integer
       title:
         type: string
     type: object
   course-service_internal_transport_http_v1_request.CreateCourseSectionItem:
     properties:
-      is_published:
+      isPublished:
         type: boolean
-      item_type:
+      itemType:
         type: string
-      section_id:
+      sectionId:
         type: integer
-      sort_order:
+      sortOrder:
         type: integer
       title:
         type: string
     type: object
   course-service_internal_transport_http_v1_request.CreateTest:
     properties:
-      available_from:
+      availableFrom:
+        example: "2026-06-01T09:00:00Z"
         type: string
-      available_to:
+      availableTo:
+        example: "2026-06-30T23:59:59Z"
         type: string
-      bank_ids:
+      bankIds:
+        example:
+        - 1
+        - 2
         items:
           type: integer
         type: array
-      course_id:
+      courseId:
+        example: 1
         type: integer
-      course_section_id:
+      courseSectionItemId:
+        example: 15
         type: integer
       description:
+        example: Final assessment for module 1
         type: string
-      duration_seconds:
+      durationSeconds:
+        example: 3600
         type: integer
-      generation_settings:
-        items:
-          type: integer
-        type: array
-      max_attempts:
+      generationSettings:
+        $ref: '#/definitions/course-service_internal_domain.TestGenerationSettings'
+      maxAttempts:
+        example: 3
         type: integer
-      max_score:
+      maxScore:
+        example: 100
         type: integer
-      questions_count:
+      questionsCount:
+        example: 20
         type: integer
       title:
+        example: Midterm Exam
         type: string
     type: object
   course-service_internal_transport_http_v1_request.DeleteCourseListeners:
@@ -499,24 +667,33 @@ definitions:
     type: object
   course-service_internal_transport_http_v1_request.GradeAttemptQuestion:
     properties:
-      attempt_question_id:
+      attemptQuestionId:
+        example: 501
         type: integer
-      instructor_comment:
+      instructorComment:
+        example: Partially correct reasoning
         type: string
-      score_awarded:
+      scoreAwarded:
+        example: 8
         type: integer
     type: object
   course-service_internal_transport_http_v1_request.SaveAttemptAnswer:
     properties:
-      attempt_question_id:
+      attemptQuestionId:
+        example: 501
         type: integer
-      selected_answer_id:
+      selectedAnswerId:
+        example: 1001
         type: integer
-      selected_answer_ids:
+      selectedAnswerIds:
+        example:
+        - 1001
+        - 1003
         items:
           type: integer
         type: array
-      text_response:
+      textResponse:
+        example: The answer is 42
         type: string
     type: object
   course-service_internal_transport_http_v1_request.SetCourseListener:
@@ -532,30 +709,32 @@ definitions:
     type: object
   course-service_internal_transport_http_v1_request.StartAttempt:
     properties:
-      test_id:
+      testId:
+        example: 10
         type: integer
-      user_id:
+      userId:
+        example: 42
         type: integer
     type: object
   course-service_internal_transport_http_v1_request.UpdateAssignment:
     properties:
-      deadline_days:
+      deadlineDays:
         type: integer
       description:
         type: string
-      item_id:
+      itemId:
         type: integer
-      max_score:
+      maxScore:
         type: integer
     type: object
   course-service_internal_transport_http_v1_request.UpdateBank:
     properties:
-      course_id:
-        type: integer
       description:
         type: string
       title:
         type: string
+      userId:
+        type: integer
     type: object
   course-service_internal_transport_http_v1_request.UpdateBankQuestion:
     properties:
@@ -563,81 +742,103 @@ definitions:
         items:
           $ref: '#/definitions/course-service_internal_transport_http_v1_request.BankAnswer'
         type: array
-      bank_id:
+      bankId:
         type: integer
-      default_points:
+      defaultPoints:
         type: integer
-      question_text:
+      questionText:
         type: string
-      question_type:
+      questionType:
         type: integer
     type: object
   course-service_internal_transport_http_v1_request.UpdateCourse:
     properties:
+      coverImageId:
+        example: 550e8400-e29b-41d4-a716-446655440000
+        type: string
       description:
         type: string
       ownerUserId:
+        example: 42
         type: integer
       status:
+        description: 0 — Draft, 1 — Active
+        enum:
+        - 0
+        - 1
+        example: 1
         type: integer
       title:
+        example: Advanced Calculus
         type: string
     type: object
   course-service_internal_transport_http_v1_request.UpdateCourseSection:
     properties:
-      course_id:
+      courseId:
         type: integer
-      parent_id:
+      parentId:
         type: integer
-      sort_order:
+      sortOrder:
         type: integer
       title:
         type: string
     type: object
   course-service_internal_transport_http_v1_request.UpdateCourseSectionItem:
     properties:
-      is_published:
+      isPublished:
         type: boolean
-      item_type:
+      itemType:
         type: string
-      section_id:
+      sectionId:
         type: integer
-      sort_order:
+      sortOrder:
         type: integer
       title:
         type: string
     type: object
   course-service_internal_transport_http_v1_request.UpdateTest:
     properties:
-      available_from:
+      availableFrom:
+        example: "2026-06-01T09:00:00Z"
         type: string
-      available_to:
+      availableTo:
+        example: "2026-06-30T23:59:59Z"
         type: string
-      bank_ids:
+      bankIds:
+        example:
+        - 1
+        - 2
         items:
           type: integer
         type: array
-      course_id:
+      courseId:
+        example: 1
         type: integer
-      course_section_id:
+      courseSectionItemId:
+        example: 15
         type: integer
       description:
+        example: Updated description
         type: string
-      duration_seconds:
+      durationSeconds:
+        example: 3600
         type: integer
-      generation_settings:
-        items:
-          type: integer
-        type: array
+      generationSettings:
+        $ref: '#/definitions/course-service_internal_domain.TestGenerationSettings'
       id:
+        example: 10
         type: integer
-      max_attempts:
+      maxAttempts:
+        example: 3
         type: integer
-      max_score:
+      maxScore:
+        example: 100
         type: integer
-      questions_count:
+      questionsCount:
+        example: 20
         type: integer
       title:
+        example: Midterm Exam (updated)
         type: string
     type: object
   internal_transport_http_v1.ErrorResponse:
@@ -646,11 +847,13 @@ definitions:
         example: bad request
         type: string
     type: object
-host: localhost:8080
+host: localhost:10001
 info:
   contact: {}
   description: |-
     REST API for courses, sections, assignments, question banks and tests.
+    Courses: list/stats use query `user_id` until JWT is enabled. Course status: 0 — Draft, 1 — Active.
+    Cover image changes publish Kafka events on topic `file-topic` (FileLoadedEvent / FileDeletedEvent).
     Tests are also available under `/api` (same handlers as `/cs/v1`).
   title: Course Service API
   version: "1.0"
@@ -783,16 +986,25 @@ paths:
       - assignments
   /attempts:
     get:
+      description: 'Lists attempts with optional filters. status values: IN_PROGRESS,
+        COMPLETED, NEEDS_GRADING.'
       parameters:
       - description: Filter by test ID
+        example: 10
         in: query
         name: test_id
         type: integer
       - description: Filter by user ID
+        example: 42
         in: query
         name: user_id
         type: integer
       - description: Filter by status
+        enum:
+        - IN_PROGRESS
+        - COMPLETED
+        - NEEDS_GRADING
+        example: IN_PROGRESS
         in: query
         name: status
         type: string
@@ -819,16 +1031,20 @@ paths:
     post:
       consumes:
       - application/json
+      description: 'Starts a new attempt. Optional limit/offset paginate questions
+        in the response. Body: {"testId":10,"userId":42}.'
       parameters:
       - description: Questions page size
+        example: 10
         in: query
         name: limit
         type: integer
       - description: Questions page offset
+        example: 0
         in: query
         name: offset
         type: integer
-      - description: Attempt
+      - description: Attempt start payload
         in: body
         name: body
         required: true
@@ -850,17 +1066,22 @@ paths:
       - attempts
   /attempts/{attempt_id}:
     get:
+      description: Returns attempt metadata, remaining time, and paginated questions
+        with answer options (without isCorrect). Each question may include saved response.
       parameters:
       - description: Attempt ID
+        example: 200
         in: path
         name: attempt_id
         required: true
         type: integer
       - description: Questions page size
+        example: 10
         in: query
         name: limit
         type: integer
       - description: Questions page offset
+        example: 0
         in: query
         name: offset
         type: integer
@@ -886,13 +1107,17 @@ paths:
     put:
       consumes:
       - application/json
+      description: Saves or updates an answer for one question. For SINGLE use selectedAnswerId;
+        for MULTIPLE use selectedAnswerIds array; for TEXT use textResponse. See schemas
+        SaveAttemptAnswerSingleExample, SaveAttemptAnswerMultipleExample, SaveAttemptAnswerTextExample.
       parameters:
       - description: Attempt ID
+        example: 200
         in: path
         name: attempt_id
         required: true
         type: integer
-      - description: Answer
+      - description: Answer payload
         in: body
         name: body
         required: true
@@ -910,8 +1135,11 @@ paths:
       - attempts
   /attempts/{attempt_id}/submit:
     post:
+      description: Finishes the attempt and runs auto-grading for choice questions.
+        Text questions may require manual grading (status NEEDS_GRADING).
       parameters:
       - description: Attempt ID
+        example: 200
         in: path
         name: attempt_id
         required: true
@@ -938,15 +1166,31 @@ paths:
         name: bank_id
         required: true
         type: integer
+      - description: Page size
+        in: query
+        name: limit
+        required: true
+        type: integer
+      - description: Page offset
+        in: query
+        name: offset
+        required: true
+        type: integer
+      - description: Filter by question type
+        in: query
+        name: question_type
+        type: integer
+      - description: Filter by question text (substring, case-insensitive)
+        in: query
+        name: filter
+        type: string
       produces:
       - application/json
       responses:
         "200":
           description: OK
           schema:
-            items:
-              $ref: '#/definitions/course-service_internal_domain.BankQuestion'
-            type: array
+            $ref: '#/definitions/course-service_internal_domain.BankQuestionsListResponse'
         "400":
           description: Bad Request
           schema:
@@ -956,6 +1200,89 @@ paths:
           schema:
             $ref: '#/definitions/internal_transport_http_v1.ErrorResponse'
       summary: List bank questions
+      tags:
+      - bank-questions
+    post:
+      consumes:
+      - application/json
+      parameters:
+      - description: Question
+        in: body
+        name: body
+        required: true
+        schema:
+          $ref: '#/definitions/course-service_internal_transport_http_v1_request.CreateBankQuestion'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+          schema:
+            $ref: '#/definitions/course-service_internal_domain.BankQuestion'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/internal_transport_http_v1.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/internal_transport_http_v1.ErrorResponse'
+      summary: Create bank question
+      tags:
+      - bank-questions
+  /bank_questions/{id}:
+    delete:
+      parameters:
+      - description: Question ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      responses:
+        "200":
+          description: OK
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/internal_transport_http_v1.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/internal_transport_http_v1.ErrorResponse'
+      summary: Delete bank question
+      tags:
+      - bank-questions
+    put:
+      consumes:
+      - application/json
+      parameters:
+      - description: Question ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      - description: Question
+        in: body
+        name: body
+        required: true
+        schema:
+          $ref: '#/definitions/course-service_internal_transport_http_v1_request.UpdateBankQuestion'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/course-service_internal_domain.BankQuestion'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/internal_transport_http_v1.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/internal_transport_http_v1.ErrorResponse'
+      summary: Update bank question
       tags:
       - bank-questions
   /bank_questions/{id}/bulk:
@@ -1013,20 +1340,12 @@ paths:
       summary: Bulk create bank questions
       tags:
       - bank-questions
-  /bank_questions/generate:
-    post:
-      responses:
-        "200":
-          description: OK
-      summary: Generate bank questions (stub)
-      tags:
-      - bank-questions
   /banks:
     get:
       parameters:
-      - description: Course ID
+      - description: Owner user ID
         in: query
-        name: course_id
+        name: user_id
         required: true
         type: integer
       produces:
@@ -1102,6 +1421,8 @@ paths:
     put:
       consumes:
       - application/json
+      description: Updates title and description. userId in body must match the bank
+        owner; userId is not changed.
       parameters:
       - description: Bank ID
         in: path
@@ -1385,9 +1706,49 @@ paths:
       tags:
       - course-sections
   /courses:
+    get:
+      description: 'Returns courses owned by user_id. Filter: if the value is numeric,
+        matches course id; otherwise matches title (case-insensitive substring). Student
+        count is in stats.totalStudents.'
+      parameters:
+      - description: Instructor user ID (until JWT auth)
+        in: query
+        name: user_id
+        required: true
+        type: integer
+      - description: User role (reserved for future auth)
+        in: query
+        name: role
+        type: string
+      - description: Filter by course id or title
+        in: query
+        name: filter
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              $ref: '#/definitions/course-service_internal_domain.Course'
+            type: array
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/internal_transport_http_v1.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/internal_transport_http_v1.ErrorResponse'
+      summary: List instructor courses
+      tags:
+      - courses
     post:
       consumes:
       - application/json
+      description: Creates a course with status Draft (0). If coverImageId is set,
+        publishes FileLoadedEvent to Kafka (file-topic).
       parameters:
       - description: Course
         in: body
@@ -1502,19 +1863,23 @@ paths:
       - courses
   /courses/{course_id}/with-all-items:
     get:
+      description: Returns course metadata (including coverImageId) and nested sections
+        with items (item_type, item_id for file/test/assignment reference).
       parameters:
       - description: Course ID
         in: path
         name: course_id
         required: true
         type: integer
-      - description: Page size
+      - description: Page size for joined rows
         in: query
         name: limit
+        required: true
         type: integer
-      - description: Page offset
+      - description: Page offset for joined rows
         in: query
         name: offset
+        required: true
         type: integer
       produces:
       - application/json
@@ -1531,7 +1896,7 @@ paths:
           description: Internal Server Error
           schema:
             $ref: '#/definitions/internal_transport_http_v1.ErrorResponse'
-      summary: Get course with sections and items
+      summary: Get course with all items
       tags:
       - courses
   /courses/{id}:
@@ -1584,6 +1949,8 @@ paths:
     put:
       consumes:
       - application/json
+      description: Updates course fields. When coverImageId changes, emits FileLoadedEvent
+        and/or FileDeletedEvent to Kafka.
       parameters:
       - description: Course ID
         in: path
@@ -1614,10 +1981,44 @@ paths:
       summary: Update course
       tags:
       - courses
+  /courses/stats:
+    get:
+      description: Returns count of active courses and total students enrolled on
+        active courses for the instructor.
+      parameters:
+      - description: Instructor user ID (until JWT auth)
+        in: query
+        name: user_id
+        required: true
+        type: integer
+      - description: User role (reserved for future auth)
+        in: query
+        name: role
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/course-service_internal_domain.CoursesStatsResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/internal_transport_http_v1.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/internal_transport_http_v1.ErrorResponse'
+      summary: Course statistics
+      tags:
+      - courses
   /tests:
     delete:
+      description: Deletes a test. Provide test_id in path or query.
       parameters:
       - description: Test ID (query)
+        example: 10
         in: query
         name: test_id
         type: integer
@@ -1636,8 +2037,11 @@ paths:
       tags:
       - tests
     get:
+      description: Returns tests for a course. Query course_id is optional; omit to
+        get all tests.
       parameters:
       - description: Filter by course ID
+        example: 1
         in: query
         name: course_id
         type: integer
@@ -1664,8 +2068,12 @@ paths:
     post:
       consumes:
       - application/json
+      description: 'Creates a test linked to a course section item. generationSettings
+        is a JSON object: {"shuffleQuestions":true,"difficultyLevels":[1,2,3]}. questionsCount
+        is a top-level field on the test. bankIds lists question banks used for random
+        question generation. Dates are RFC3339 (UTC recommended).'
       parameters:
-      - description: Test
+      - description: Test payload
         in: body
         name: body
         required: true
@@ -1689,42 +2097,17 @@ paths:
       summary: Create test
       tags:
       - tests
-    put:
-      consumes:
-      - application/json
-      parameters:
-      - description: Test
-        in: body
-        name: body
-        required: true
-        schema:
-          $ref: '#/definitions/course-service_internal_transport_http_v1_request.UpdateTest'
-      produces:
-      - application/json
-      responses:
-        "200":
-          description: OK
-          schema:
-            $ref: '#/definitions/course-service_internal_domain.Test'
-        "400":
-          description: Bad Request
-          schema:
-            $ref: '#/definitions/internal_transport_http_v1.ErrorResponse'
-        "500":
-          description: Internal Server Error
-          schema:
-            $ref: '#/definitions/internal_transport_http_v1.ErrorResponse'
-      summary: Update test
-      tags:
-      - tests
   /tests/{test_id}:
     delete:
+      description: Deletes a test. Provide test_id in path or query.
       parameters:
       - description: Test ID (query)
+        example: 10
         in: query
         name: test_id
         type: integer
       - description: Test ID (path)
+        example: 10
         in: path
         name: test_id
         type: integer
@@ -1743,13 +2126,17 @@ paths:
       tags:
       - tests
     get:
+      description: Returns test metadata and all attempts of the given user for this
+        test.
       parameters:
       - description: Test ID
+        example: 10
         in: path
         name: test_id
         required: true
         type: integer
       - description: User ID
+        example: 42
         in: query
         name: user_id
         required: true
@@ -1775,12 +2162,15 @@ paths:
     put:
       consumes:
       - application/json
+      description: Updates test fields. test_id can be passed in path or in body as
+        id. Same body format as create.
       parameters:
       - description: Test ID (path)
+        example: 10
         in: path
         name: test_id
         type: integer
-      - description: Test
+      - description: Test payload
         in: body
         name: body
         required: true
@@ -1806,17 +2196,26 @@ paths:
       - tests
   /tests/{test_id}/attempts:
     get:
+      description: 'Lists attempts for a specific test. status values: IN_PROGRESS,
+        COMPLETED, NEEDS_GRADING.'
       parameters:
       - description: Test ID
+        example: 10
         in: path
         name: test_id
         required: true
         type: integer
       - description: Filter by user ID
+        example: 42
         in: query
         name: user_id
         type: integer
       - description: Filter by status
+        enum:
+        - IN_PROGRESS
+        - COMPLETED
+        - NEEDS_GRADING
+        example: COMPLETED
         in: query
         name: status
         type: string
@@ -1842,22 +2241,28 @@ paths:
       - tests
   /tests/{test_id}/attempts/{attempt_id}:
     get:
+      description: Same response as GET /attempts/{attempt_id}, but validates that
+        the attempt belongs to the given test.
       parameters:
       - description: Test ID
+        example: 10
         in: path
         name: test_id
         required: true
         type: integer
       - description: Attempt ID
+        example: 200
         in: path
         name: attempt_id
         required: true
         type: integer
       - description: Questions page size
+        example: 10
         in: query
         name: limit
         type: integer
       - description: Questions page offset
+        example: 0
         in: query
         name: offset
         type: integer
@@ -1887,18 +2292,23 @@ paths:
     post:
       consumes:
       - application/json
+      description: 'Assigns scores to text (or other manually graded) questions. Body:
+        {"scores":[{"attemptQuestionId":501,"scoreAwarded":8,"instructorComment":"Partially
+        correct"}]}.'
       parameters:
       - description: Test ID
+        example: 10
         in: path
         name: test_id
         required: true
         type: integer
       - description: Attempt ID
+        example: 200
         in: path
         name: attempt_id
         required: true
         type: integer
-      - description: Scores
+      - description: Manual scores
         in: body
         name: body
         required: true

@@ -26,17 +26,17 @@ func NewRepository(db *sqlx.DB) *Repository {
 func (r *Repository) Create(ctx context.Context, params CreateRepoParams) (domain.Test, error) {
 	const query = `
 		insert into tests (
-			course_id, course_section_id, title, description, available_from, available_to,
+			course_id, course_section_item_id, title, description, available_from, available_to,
 			duration_seconds, max_attempts, max_score, questions_count, generation_settings, bank_ids
 		)
 		values ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12)
-		returning id, course_id, course_section_id, title, description, available_from, available_to,
+		returning id, course_id, course_section_item_id, title, description, available_from, available_to,
 			duration_seconds, max_attempts, max_score, questions_count, generation_settings, created_at, bank_ids`
 
 	var test testModel
 	err := r.db.GetContext(ctx, &test, query,
 		params.CourseID,
-		params.CourseSectionID,
+		params.CourseSectionItemID,
 		params.Title,
 		params.Description,
 		params.AvailableFrom,
@@ -58,7 +58,7 @@ func (r *Repository) Update(ctx context.Context, params UpdateRepoParams) (domai
 	const query = `
 		update tests
 		set course_id = $2,
-			course_section_id = $3,
+			course_section_item_id = $3,
 			title = $4,
 			description = $5,
 			available_from = $6,
@@ -70,14 +70,14 @@ func (r *Repository) Update(ctx context.Context, params UpdateRepoParams) (domai
 			generation_settings = $12,
 			bank_ids = $13
 		where id = $1
-		returning id, course_id, course_section_id, title, description, available_from, available_to,
+		returning id, course_id, course_section_item_id, title, description, available_from, available_to,
 			duration_seconds, max_attempts, max_score, questions_count, generation_settings, created_at, bank_ids`
 
 	var test testModel
 	err := r.db.GetContext(ctx, &test, query,
 		params.ID,
 		params.CourseID,
-		params.CourseSectionID,
+		params.CourseSectionItemID,
 		params.Title,
 		params.Description,
 		params.AvailableFrom,
@@ -117,7 +117,7 @@ func (r *Repository) Delete(ctx context.Context, id int64) error {
 
 func (r *Repository) Get(ctx context.Context, id int64) (domain.Test, error) {
 	const query = `
-		select id, course_id, course_section_id, title, description, available_from, available_to,
+		select id, course_id, course_section_item_id, title, description, available_from, available_to,
 			duration_seconds, max_attempts, max_score, questions_count, generation_settings, created_at, bank_ids
 		from tests
 		where id = $1`
@@ -136,12 +136,12 @@ func (r *Repository) Get(ctx context.Context, id int64) (domain.Test, error) {
 func (r *Repository) GetList(ctx context.Context, courseID *int64) ([]domain.Test, error) {
 	const (
 		listAllQuery = `
-			select id, course_id, course_section_id, title, description, available_from, available_to,
+			select id, course_id, course_section_item_id, title, description, available_from, available_to,
 				duration_seconds, max_attempts, max_score, questions_count, generation_settings, created_at, bank_ids
 			from tests
 			order by created_at desc`
 		listByCourseQuery = `
-			select id, course_id, course_section_id, title, description, available_from, available_to,
+			select id, course_id, course_section_item_id, title, description, available_from, available_to,
 				duration_seconds, max_attempts, max_score, questions_count, generation_settings, created_at, bank_ids
 			from tests
 			where course_id = $1
@@ -239,7 +239,7 @@ func (r *Repository) SelectBankQuestionIDs(ctx context.Context, params SelectBan
 
 func (r *Repository) GetQuestionsWithAnswers(ctx context.Context, questionIDs []int64) ([]domain.Question, error) {
 	const query = `
-		select id, bank_id, question_type, question_text, default_points
+		select id, bank_id, type, text, points
 		from bank_question
 		where id = any($1)`
 
@@ -270,7 +270,7 @@ func (r *Repository) GetQuestionsWithAnswers(ctx context.Context, questionIDs []
 
 func (r *Repository) loadBankAnswers(ctx context.Context, questionIDs []int64) (map[int64][]domain.QuestionAnswer, error) {
 	const query = `
-		select id, question_id, answer_text as text, is_correct
+		select id, question_id, text, is_correct
 		from bank_answers
 		where question_id = any($1)
 		order by question_id, id`
