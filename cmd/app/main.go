@@ -52,6 +52,11 @@ func main() {
 		log.Fatal().Err(err).Msg("failed to connect to postgres")
 	}
 
+	if err = postgres.RunMigrations(postgresConn.DB, "file://./migrations", cfg.Postgres.DBName); err != nil {
+		log.Fatal().Err(err).Msg("failed to run migrations")
+	}
+	log.Info().Msg("successfully ran migrations")
+
 	var kafkaProducer *kafka.Producer
 	if len(cfg.Kafka.Brokers) > 0 {
 		kafkaProducer, err = kafka.NewProducer(kafka.ProducerConfig{
@@ -72,12 +77,18 @@ func main() {
 	assignmentsService := assignmentservice.NewService(assignmentservice.NewRepository(postgresConn), log)
 	testsService := testsservice.NewService(testsservice.NewRepository(postgresConn), log)
 
+	pingers := []http.Pinger{postgres.NewHealth(postgresConn)}
+	if kafkaProducer != nil {
+		pingers = append(pingers, kafkaProducer)
+	}
+
 	appCtx, cancel := context.WithCancel(context.Background())
 	defer cancel()
 	go testsService.RunExpiredAttemptsWorker(appCtx, time.Minute)
 
 	httpServer := http.NewServer(http.Config{
 		Addr:                      cfg.HTTPServer.Addr,
+		Pingers:                   pingers,
 		Logger:                    log,
 		CoursesService:            coursesService,
 		CourseListenersService:    coursesService,

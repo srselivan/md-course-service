@@ -92,6 +92,7 @@ type testsService interface {
 
 type Config struct {
 	Addr                      string
+	Pingers                   []Pinger
 	CoursesService            coursesService
 	CourseListenersService    courseListenersService
 	CourseSectionsService     courseSectionsService
@@ -117,6 +118,8 @@ type Server struct {
 	app  *fiber.App
 	addr string
 
+	pingers []Pinger
+
 	coursesService            coursesService
 	courseListenersService    courseListenersService
 	courseSectionsService     courseSectionsService
@@ -133,6 +136,7 @@ func NewServer(config Config) *Server {
 	s := &Server{
 		app:                       fiber.New(),
 		addr:                      config.Addr,
+		pingers:                   config.Pingers,
 		coursesService:            config.CoursesService,
 		courseListenersService:    config.CourseListenersService,
 		courseSectionsService:     config.CourseSectionsService,
@@ -162,6 +166,7 @@ func (s *Server) Shutdown() error {
 
 func (s *Server) init() {
 	registerSwagger(s.app)
+	s.app.Get("/health", s.health)
 
 	apiGroup := s.app.Group("/cs")
 	apiGroup.Use(httpmiddleware.JSONContentType())

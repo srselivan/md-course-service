@@ -95,6 +95,10 @@ func (p *Producer) producePromise(record *kgo.Record, err error) {
 		Send()
 }
 
+func (p *Producer) Ping(ctx context.Context) error {
+	return p.client.Ping(ctx)
+}
+
 func (p *Producer) Close() {
 	p.client.Close()
 }
