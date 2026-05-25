@@ -1,0 +1,24 @@
+apiVersion: v2
+name: course-service
+description: |
+  Helm chart для Go-микросервиса course-service.
+  PostgreSQL и Kafka должны быть развёрнуты ВНЕ кластера Kubernetes —
+  чарт принимает их адреса через values.yaml.
+
+# Тип "application" означает, что это обычный сервис, который мы деплоим
+# (в отличие от "library" — переиспользуемых вспомогательных чартов).
+type: application
+
+# version  — версия самого Helm chart'а. Меняем, когда правим шаблоны/values.
+# appVersion — версия приложения (тег Docker-образа по умолчанию).
+# Их полезно держать раздельно: чарт можно поправить без релиза приложения.
+version: 0.1.0
+appVersion: "1.0.0"
+
+# Минимальная версия Kubernetes, на которой чарт точно работает.
+# Probes (startup/liveness/readiness) и SecurityContext'ы из шаблонов
+# поддерживаются начиная с 1.20+.
+kubeVersion: ">=1.20.0-0"
+
+maintainers:
+  - name: course-service team

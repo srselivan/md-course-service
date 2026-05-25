@@ -127,6 +127,27 @@ DB_NAME=course
 - `PUT /courses/{id}` - Update a course
 - `DELETE /courses/{id}` - Delete a course
 
+## Deploy to Kubernetes (Helm)
+
+В репозитории есть готовый Helm chart в папке [`helm/course-service/`](helm/course-service/).
+Полный гайд (включая поднятие кластера, сборку образа, настройку values и пошаговую установку)
+лежит в [`helm/course-service/README.md`](helm/course-service/README.md).
+
+Кратко:
+
+```bash
+docker build -t course-service:dev .
+
+helm upgrade --install course-service ./helm/course-service \
+  --namespace course --create-namespace \
+  --set image.tag=dev \
+  --set image.pullPolicy=Never \
+  --set secrets.postgresPassword=postgres
+```
+
+**ВАЖНО:** PostgreSQL и Kafka должны быть развёрнуты ВНЕ кластера — chart принимает их адреса
+через `config.postgres.*` и `config.kafka.brokers` в `values.yaml`.
+
 ## Development
 
 ### Adding a New Feature
