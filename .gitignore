@@ -31,3 +31,4 @@ go.work
 # OS
 Thumbs.db
 
+*.log
