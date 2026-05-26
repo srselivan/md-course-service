@@ -109,6 +109,7 @@ config:
     db: "courses"
     # disable | require | verify-ca | verify-full
     sslmode: "disable"
+    migrationsPath: "/app/migrations"  # путь внутри контейнера, миграции нужно положить в папку migrations
 
   # ----- Kafka (живёт ВНЕ Kubernetes) -----
   # Если кафка не нужна — оставь brokers пустым массивом, сервис стартует без неё

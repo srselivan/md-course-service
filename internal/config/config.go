@@ -20,12 +20,13 @@ type LoggerConfig struct {
 }
 
 type PostgresConfig struct {
-	Host     string `env:"POSTGRES_HOST,required"`
-	Port     string `env:"POSTGRES_PORT,required"`
-	User     string `env:"POSTGRES_USER,required"`
-	Password string `env:"POSTGRES_PASSWORD,required"`
-	DBName   string `env:"POSTGRES_DB,required"`
-	SSLMode  string `env:"POSTGRES_SSLMODE,required"`
+	Host           string `env:"POSTGRES_HOST,required"`
+	Port           string `env:"POSTGRES_PORT,required"`
+	User           string `env:"POSTGRES_USER,required"`
+	Password       string `env:"POSTGRES_PASSWORD,required"`
+	DBName         string `env:"POSTGRES_DB,required"`
+	SSLMode        string `env:"POSTGRES_SSLMODE,required"`
+	MigrationsPath string `env:"POSTGRES_MIGRATIONS_PATH,required"`
 }
 
 type HTTPServerConfig struct {

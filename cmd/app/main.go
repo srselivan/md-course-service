@@ -52,7 +52,7 @@ func main() {
 		log.Fatal().Err(err).Msg("failed to connect to postgres")
 	}
 
-	if err = postgres.RunMigrations(postgresConn.DB, "file://./migrations", cfg.Postgres.DBName); err != nil {
+	if err = postgres.RunMigrations(postgresConn.DB, cfg.Postgres.MigrationsPath, cfg.Postgres.DBName); err != nil {
 		log.Fatal().Err(err).Msg("failed to run migrations")
 	}
 	log.Info().Msg("successfully ran migrations")
