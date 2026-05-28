@@ -116,14 +116,14 @@ definitions:
     type: object
   course-service_internal_domain.BankAnswer:
     properties:
-      answerText:
-        type: string
       id:
         type: integer
       isCorrect:
         type: boolean
       questionId:
         type: integer
+      text:
+        type: string
     type: object
   course-service_internal_domain.BankQuestion:
     properties:
@@ -135,14 +135,14 @@ definitions:
         type: integer
       createdAt:
         type: string
-      defaultPoints:
-        type: integer
       id:
         type: integer
-      questionText:
+      points:
+        type: integer
+      text:
         type: string
-      questionType:
-        $ref: '#/definitions/course-service_internal_domain.QuestionType'
+      type:
+        $ref: '#/definitions/course-service_internal_domain.TestingQuestionType'
     type: object
   course-service_internal_domain.BankQuestionsListMeta:
     properties:
@@ -356,17 +356,6 @@ definitions:
         example: "4"
         type: string
     type: object
-  course-service_internal_domain.QuestionType:
-    enum:
-    - 0
-    - 1
-    - 2
-    format: int32
-    type: integer
-    x-enum-varnames:
-    - QuestionTypeSingleChoice
-    - QuestionTypeMultipleChoice
-    - QuestionTypeText
   course-service_internal_domain.Test:
     properties:
       availableFrom:
@@ -511,12 +500,14 @@ definitions:
     - TestingQuestionTypeSingle
     - TestingQuestionTypeMultiple
     - TestingQuestionTypeText
-  course-service_internal_transport_http_v1_request.BankAnswer:
+  course-service_internal_transport_http_v1_request.BankAnswerRequest:
     properties:
-      answerText:
-        type: string
       isCorrect:
+        example: true
         type: boolean
+      text:
+        example: "4"
+        type: string
     type: object
   course-service_internal_transport_http_v1_request.BulkCreateBankQuestion:
     properties:
@@ -556,16 +547,25 @@ definitions:
     properties:
       answers:
         items:
-          $ref: '#/definitions/course-service_internal_transport_http_v1_request.BankAnswer'
+          $ref: '#/definitions/course-service_internal_transport_http_v1_request.BankAnswerRequest'
         type: array
       bankId:
+        example: 1
         type: integer
-      defaultPoints:
+      points:
+        example: 5
         type: integer
-      questionText:
+      text:
+        example: What is 2+2?
         type: string
-      questionType:
-        type: integer
+      type:
+        allOf:
+        - $ref: '#/definitions/course-service_internal_domain.TestingQuestionType'
+        enum:
+        - SINGLE
+        - MULTIPLE
+        - TEXT
+        example: SINGLE
     type: object
   course-service_internal_transport_http_v1_request.CreateCourse:
     properties:
@@ -716,6 +716,13 @@ definitions:
         example: 42
         type: integer
     type: object
+  course-service_internal_transport_http_v1_request.SubmitAttemptAnswers:
+    properties:
+      answers:
+        items:
+          $ref: '#/definitions/course-service_internal_transport_http_v1_request.SaveAttemptAnswer'
+        type: array
+    type: object
   course-service_internal_transport_http_v1_request.UpdateAssignment:
     properties:
       deadlineDays:
@@ -740,16 +747,25 @@ definitions:
     properties:
       answers:
         items:
-          $ref: '#/definitions/course-service_internal_transport_http_v1_request.BankAnswer'
+          $ref: '#/definitions/course-service_internal_transport_http_v1_request.BankAnswerRequest'
         type: array
       bankId:
+        example: 1
         type: integer
-      defaultPoints:
+      points:
+        example: 5
         type: integer
-      questionText:
+      text:
+        example: What is 2+2?
         type: string
-      questionType:
-        type: integer
+      type:
+        allOf:
+        - $ref: '#/definitions/course-service_internal_domain.TestingQuestionType'
+        enum:
+        - SINGLE
+        - MULTIPLE
+        - TEXT
+        example: SINGLE
     type: object
   course-service_internal_transport_http_v1_request.UpdateCourse:
     properties:
@@ -1158,6 +1174,39 @@ paths:
       summary: Submit attempt for grading
       tags:
       - attempts
+  /attempts/{attempt_id}/submit-answers:
+    post:
+      consumes:
+      - application/json
+      description: Saves all provided answers and immediately submits the attempt
+        for grading. Combines PUT /answers + POST /submit into a single call.
+      parameters:
+      - description: Attempt ID
+        example: 200
+        in: path
+        name: attempt_id
+        required: true
+        type: integer
+      - description: All answers
+        in: body
+        name: body
+        required: true
+        schema:
+          $ref: '#/definitions/course-service_internal_transport_http_v1_request.SubmitAttemptAnswers'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/course-service_internal_domain.TestAttempt'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/internal_transport_http_v1.ErrorResponse'
+      summary: Submit all answers and complete attempt
+      tags:
+      - attempts
   /bank_questions:
     get:
       parameters:
@@ -1177,9 +1226,13 @@ paths:
         required: true
         type: integer
       - description: Filter by question type
+        enum:
+        - SINGLE
+        - MULTIPLE
+        - TEXT
         in: query
         name: question_type
-        type: integer
+        type: string
       - description: Filter by question text (substring, case-insensitive)
         in: query
         name: filter

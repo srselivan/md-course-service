@@ -457,6 +457,54 @@ const docTemplate = `{
                 }
             }
         },
+        "/attempts/{attempt_id}/submit-answers": {
+            "post": {
+                "description": "Saves all provided answers and immediately submits the attempt for grading. Combines PUT /answers + POST /submit into a single call.",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "attempts"
+                ],
+                "summary": "Submit all answers and complete attempt",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "example": 200,
+                        "description": "Attempt ID",
+                        "name": "attempt_id",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "description": "All answers",
+                        "name": "body",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/course-service_internal_transport_http_v1_request.SubmitAttemptAnswers"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/course-service_internal_domain.TestAttempt"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/internal_transport_http_v1.ErrorResponse"
+                        }
+                    }
+                }
+            }
+        },
         "/bank_questions": {
             "get": {
                 "produces": [
@@ -489,7 +537,12 @@ const docTemplate = `{
                         "required": true
                     },
                     {
-                        "type": "integer",
+                        "enum": [
+                            "SINGLE",
+                            "MULTIPLE",
+                            "TEXT"
+                        ],
+                        "type": "string",
                         "description": "Filter by question type",
                         "name": "question_type",
                         "in": "query"
@@ -2385,9 +2438,6 @@ const docTemplate = `{
         "course-service_internal_domain.BankAnswer": {
             "type": "object",
             "properties": {
-                "answerText": {
-                    "type": "string"
-                },
                 "id": {
                     "type": "integer"
                 },
@@ -2396,6 +2446,9 @@ const docTemplate = `{
                 },
                 "questionId": {
                     "type": "integer"
+                },
+                "text": {
+                    "type": "string"
                 }
             }
         },
@@ -2414,17 +2467,17 @@ const docTemplate = `{
                 "createdAt": {
                     "type": "string"
                 },
-                "defaultPoints": {
-                    "type": "integer"
-                },
                 "id": {
                     "type": "integer"
                 },
-                "questionText": {
+                "points": {
+                    "type": "integer"
+                },
+                "text": {
                     "type": "string"
                 },
-                "questionType": {
-                    "$ref": "#/definitions/course-service_internal_domain.QuestionType"
+                "type": {
+                    "$ref": "#/definitions/course-service_internal_domain.TestingQuestionType"
                 }
             }
         },
@@ -2734,20 +2787,6 @@ const docTemplate = `{
                 }
             }
         },
-        "course-service_internal_domain.QuestionType": {
-            "type": "integer",
-            "format": "int32",
-            "enum": [
-                0,
-                1,
-                2
-            ],
-            "x-enum-varnames": [
-                "QuestionTypeSingleChoice",
-                "QuestionTypeMultipleChoice",
-                "QuestionTypeText"
-            ]
-        },
         "course-service_internal_domain.Test": {
             "type": "object",
             "properties": {
@@ -2950,14 +2989,16 @@ const docTemplate = `{
                 "TestingQuestionTypeText"
             ]
         },
-        "course-service_internal_transport_http_v1_request.BankAnswer": {
+        "course-service_internal_transport_http_v1_request.BankAnswerRequest": {
             "type": "object",
             "properties": {
-                "answerText": {
-                    "type": "string"
-                },
                 "isCorrect": {
-                    "type": "boolean"
+                    "type": "boolean",
+                    "example": true
+                },
+                "text": {
+                    "type": "string",
+                    "example": "4"
                 }
             }
         },
@@ -3020,20 +3061,33 @@ const docTemplate = `{
                 "answers": {
                     "type": "array",
                     "items": {
-                        "$ref": "#/definitions/course-service_internal_transport_http_v1_request.BankAnswer"
+                        "$ref": "#/definitions/course-service_internal_transport_http_v1_request.BankAnswerRequest"
                     }
                 },
                 "bankId": {
-                    "type": "integer"
+                    "type": "integer",
+                    "example": 1
                 },
-                "defaultPoints": {
-                    "type": "integer"
+                "points": {
+                    "type": "integer",
+                    "example": 5
                 },
-                "questionText": {
-                    "type": "string"
+                "text": {
+                    "type": "string",
+                    "example": "What is 2+2?"
                 },
-                "questionType": {
-                    "type": "integer"
+                "type": {
+                    "enum": [
+                        "SINGLE",
+                        "MULTIPLE",
+                        "TEXT"
+                    ],
+                    "allOf": [
+                        {
+                            "$ref": "#/definitions/course-service_internal_domain.TestingQuestionType"
+                        }
+                    ],
+                    "example": "SINGLE"
                 }
             }
         },
@@ -3254,6 +3308,17 @@ const docTemplate = `{
                 }
             }
         },
+        "course-service_internal_transport_http_v1_request.SubmitAttemptAnswers": {
+            "type": "object",
+            "properties": {
+                "answers": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/course-service_internal_transport_http_v1_request.SaveAttemptAnswer"
+                    }
+                }
+            }
+        },
         "course-service_internal_transport_http_v1_request.UpdateAssignment": {
             "type": "object",
             "properties": {
@@ -3291,20 +3356,33 @@ const docTemplate = `{
                 "answers": {
                     "type": "array",
                     "items": {
-                        "$ref": "#/definitions/course-service_internal_transport_http_v1_request.BankAnswer"
+                        "$ref": "#/definitions/course-service_internal_transport_http_v1_request.BankAnswerRequest"
                     }
                 },
                 "bankId": {
-                    "type": "integer"
+                    "type": "integer",
+                    "example": 1
                 },
-                "defaultPoints": {
-                    "type": "integer"
+                "points": {
+                    "type": "integer",
+                    "example": 5
                 },
-                "questionText": {
-                    "type": "string"
+                "text": {
+                    "type": "string",
+                    "example": "What is 2+2?"
                 },
-                "questionType": {
-                    "type": "integer"
+                "type": {
+                    "enum": [
+                        "SINGLE",
+                        "MULTIPLE",
+                        "TEXT"
+                    ],
+                    "allOf": [
+                        {
+                            "$ref": "#/definitions/course-service_internal_domain.TestingQuestionType"
+                        }
+                    ],
+                    "example": "SINGLE"
                 }
             }
         },

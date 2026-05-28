@@ -39,6 +39,8 @@ func main() {
 		panic(err)
 	}
 
+	cfg.LogStartup(log)
+
 	postgresConn, err := postgres.New(postgres.Config{
 		Host:     cfg.Postgres.Host,
 		Port:     cfg.Postgres.Port,
