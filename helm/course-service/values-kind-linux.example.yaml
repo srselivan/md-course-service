@@ -1,0 +1,59 @@
+# =============================================================================
+# Пример для Linux + kind + PostgreSQL (и Kafka) в Docker на той же машине.
+#
+# Скопируй в values-kind-linux.yaml (не коммить с паролями) и ставь так:
+#   helm upgrade --install course-service ./helm/course-service \
+#       -n course --create-namespace \
+#       -f helm/course-service/values-kind-linux.yaml
+# =============================================================================
+
+image:
+  repository: course-service
+  tag: dev
+  pullPolicy: Never
+
+config:
+  logLevel: debug
+  postgres:
+    # Рекомендуемый способ на Linux: подключить контейнер postgres к сети kind.
+    # Тогда Docker DNS внутри сети kind резолвит имя "postgres" в IP контейнера.
+    #
+    #   docker network connect kind postgres
+    #   # если Kafka тоже в docker:
+    #   docker network connect kind kafka
+    #
+    # Имя контейнера должно совпадать (docker ps --format '{{.Names}}').
+    host: "postgres"
+    port: "5432"
+    user: "postgres"
+    db: "courses"
+    sslmode: "disable"
+
+  kafka:
+    # После: docker network connect kind <имя-контейнера-kafka>
+    brokers: []
+    # - "kafka:9092"
+
+secrets:
+  postgresPassword: "postgres"
+
+service:
+  type: NodePort
+
+# -----------------------------------------------------------------------------
+# Альтернатива host: postgres — не подключать контейнер к сети kind,
+# а ходить на Postgres через проброшенный на хост порт (-p 5432:5432).
+# Раскомментируй hostAliases и смени postgres.host на host.docker.internal.
+#
+# IP узнай на своей машине (часто 172.17.0.1, но не всегда):
+#   ip -4 addr show docker0 | grep -oP '(?<=inet\s)\d+(\.\d+){3}'
+# или шлюз сети kind:
+#   docker network inspect kind -f '{{(index .IPAM.Config 0).Gateway}}'
+# -----------------------------------------------------------------------------
+# hostAliases:
+#   - ip: "172.17.0.1"
+#     hostnames:
+#       - host.docker.internal
+# config:
+#   postgres:
+#     host: "host.docker.internal"

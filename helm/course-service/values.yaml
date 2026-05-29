@@ -94,14 +94,12 @@ config:
 
   # ----- PostgreSQL (живёт ВНЕ Kubernetes) -----
   postgres:
-    # host — адрес внешней БД. Это может быть:
-    #   - DNS-имя:        db.example.com
-    #   - IP узла:        10.0.5.12
-    #   - Если PG крутится прямо на той же машине, что и k8s-нода (например,
-    #     в Docker Desktop / Rancher Desktop), используем имя:
-    #         host.docker.internal  (Docker Desktop)
-    #         host.minikube.internal (minikube — нужно включить)
-    host: "host.docker.internal"
+    # host — адрес внешней БД:
+    #   Docker Desktop (Win/macOS):  host.docker.internal
+    #   Linux + kind (рекомендуется): postgres  — после docker network connect kind postgres
+    #   Linux + kind (альтернатива): host.docker.internal + hostAliases (см. values-kind-linux.example.yaml)
+    #   Прод / отдельный сервер:     DNS или IP
+    host: "postgres"
     port: "5432"
     user: "postgres"
     # password ЗДЕСЬ НЕ УКАЗЫВАЕМ — он хранится в .Values.secrets.postgresPassword
@@ -115,8 +113,9 @@ config:
   # Если кафка не нужна — оставь brokers пустым массивом, сервис стартует без неё
   # (см. cmd/app/main.go: producer создаётся только когда брокеры указаны).
   kafka:
-    brokers:
-      - "host.docker.internal:9092"
+    # На Linux+kind оставь [] или укажи kafka:9092 после docker network connect kind kafka
+    brokers: []
+    # - "host.docker.internal:9092"   # Docker Desktop
 
 # -----------------------------------------------------------------------------
 # secrets — СЕКРЕТНЫЕ значения. Превращаются в Kubernetes Secret.
@@ -218,15 +217,27 @@ probes:
     failureThreshold: 3
 
 # -----------------------------------------------------------------------------
+# hostAliases — доп. записи в /etc/hosts пода (часто нужно на Linux).
+# На Docker Desktop host.docker.internal уже есть. На Linux+kind — нет.
+# Варианты см. helm/course-service/values-kind-linux.example.yaml
+# -----------------------------------------------------------------------------
+hostAliases: []
+# - ip: "172.17.0.1"
+#   hostnames:
+#     - host.docker.internal
+
+# -----------------------------------------------------------------------------
 # securityContext — настройки безопасности контейнера.
-# В Dockerfile мы создаём пользователя app:app и переключаемся на него,
-# поэтому здесь явно говорим runAsNonRoot, чтобы k8s не дал случайно
-# запустить от root, если кто-то соберёт образ иначе.
+# runAsUser/runAsGroup 1000 совпадают с USER 1000:1000 в Dockerfile.
 # -----------------------------------------------------------------------------
 podSecurityContext:
   runAsNonRoot: true
+  runAsUser: 1000
+  runAsGroup: 1000
   fsGroup: 1000
 containerSecurityContext:
+  runAsUser: 1000
+  runAsGroup: 1000
   allowPrivilegeEscalation: false
   readOnlyRootFilesystem: false  # код пишет логи в /app/logs, корень не readonly
   capabilities:

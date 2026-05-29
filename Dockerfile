@@ -7,11 +7,12 @@ RUN cd cmd/app/ && CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go build -o /app/course
 
 FROM alpine:3.23
 RUN apk add --no-cache ca-certificates \
-    && addgroup -S app && adduser -S app -G app
+    && addgroup -S -g 1000 app \
+    && adduser -S -u 1000 -G app app
 WORKDIR /app
 COPY --from=builder /app/course-service .
 COPY migrations ./migrations
-RUN mkdir -p /app/logs && chown -R app:app /app
-USER app
+RUN mkdir -p /app/logs && chown -R 1000:1000 /app
+USER 1000:1000
 EXPOSE 10001
 CMD ["./course-service"]

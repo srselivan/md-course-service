@@ -1,0 +1,156 @@
+{{/*
+=================================================================
+Deployment — основной объект, описывающий, как запускать наш
+сервис: какой образ, сколько копий, как обновлять, какие проверки
+здоровья и т.д. Под капотом Deployment управляет ReplicaSet,
+а ReplicaSet — отдельными Pod'ами.
+=================================================================
+*/}}
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ include "course-service.fullname" . }}
+  labels:
+    {{- include "course-service.labels" . | nindent 4 }}
+spec:
+  replicas: {{ .Values.replicaCount }}
+
+  {{- /* Стратегия обновления (RollingUpdate / Recreate). См. values.yaml. */}}
+  strategy:
+    {{- toYaml .Values.strategy | nindent 4 }}
+
+  {{- /*
+    Селектор должен совпадать с labels у Pod'а ниже, ИНАЧЕ Deployment не
+    увидит свои поды. Поэтому используем общий helper selectorLabels.
+  */}}
+  selector:
+    matchLabels:
+      {{- include "course-service.selectorLabels" . | nindent 6 }}
+
+  template:
+    metadata:
+      labels:
+        {{- include "course-service.selectorLabels" . | nindent 8 }}
+      annotations:
+        {{- /*
+          Хитрая полезная аннотация: хэш содержимого Secret.
+          Когда меняется .env (например, поменяли пароль БД), хэш меняется,
+          k8s видит изменение в шаблоне Pod'а и автоматически пересоздаёт поды.
+          Без этой строки helm upgrade обновил бы только Secret, а поды
+          продолжили бы работать со старыми ENV до ручного рестарта.
+        */}}
+        checksum/secret: {{ include (print $.Template.BasePath "/secret.yaml") . | sha256sum }}
+    spec:
+      serviceAccountName: {{ include "course-service.serviceAccountName" . }}
+
+      {{- with .Values.imagePullSecrets }}
+      imagePullSecrets:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+
+      securityContext:
+        {{- toYaml .Values.podSecurityContext | nindent 8 }}
+
+      {{- with .Values.hostAliases }}
+      hostAliases:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+
+      containers:
+        - name: {{ .Chart.Name }}
+          image: "{{ .Values.image.repository }}:{{ .Values.image.tag | default .Chart.AppVersion }}"
+          imagePullPolicy: {{ .Values.image.pullPolicy }}
+
+          securityContext:
+            {{- toYaml .Values.containerSecurityContext | nindent 12 }}
+
+          ports:
+            - name: http
+              {{- /*
+                containerPort должен совпадать с портом в HTTP_SERVER_ADDR.
+                Парсим порт из строки ":10001" → 10001.
+              */}}
+              containerPort: {{ .Values.config.httpServerAddr | trimPrefix ":" | int }}
+              protocol: TCP
+
+          {{- with .Values.extraEnv }}
+          env:
+            {{- toYaml . | nindent 12 }}
+          {{- end }}
+
+          volumeMounts:
+            {{- /*
+              1) .env-файл из Secret. Монтируем "subPath: .env" — это
+                 важная деталь: без неё k8s заменит ВСЮ директорию /app/.env
+                 содержимым ключей секрета (а нам нужен ровно один файл).
+            */}}
+            - name: env-file
+              mountPath: /app/.env
+              subPath: .env
+              readOnly: true
+            {{- /*
+              2) Папка для логов. Используем emptyDir — данные живут пока
+                 жив Pod. Для учебного стенда этого достаточно. В реальном
+                 проде логи лучше слать в stdout и собирать через DaemonSet
+                 (fluent-bit / vector / promtail).
+            */}}
+            - name: logs
+              mountPath: {{ .Values.config.logFilePath }}
+
+          {{- if .Values.probes.startup.enabled }}
+          startupProbe:
+            httpGet:
+              path: /health
+              port: http
+            failureThreshold: {{ .Values.probes.startup.failureThreshold }}
+            periodSeconds: {{ .Values.probes.startup.periodSeconds }}
+          {{- end }}
+
+          {{- if .Values.probes.liveness.enabled }}
+          livenessProbe:
+            httpGet:
+              path: /health
+              port: http
+            initialDelaySeconds: {{ .Values.probes.liveness.initialDelaySeconds }}
+            periodSeconds: {{ .Values.probes.liveness.periodSeconds }}
+            timeoutSeconds: {{ .Values.probes.liveness.timeoutSeconds }}
+            failureThreshold: {{ .Values.probes.liveness.failureThreshold }}
+          {{- end }}
+
+          {{- if .Values.probes.readiness.enabled }}
+          readinessProbe:
+            httpGet:
+              path: /health
+              port: http
+            initialDelaySeconds: {{ .Values.probes.readiness.initialDelaySeconds }}
+            periodSeconds: {{ .Values.probes.readiness.periodSeconds }}
+            timeoutSeconds: {{ .Values.probes.readiness.timeoutSeconds }}
+            failureThreshold: {{ .Values.probes.readiness.failureThreshold }}
+          {{- end }}
+
+          resources:
+            {{- toYaml .Values.resources | nindent 12 }}
+
+      volumes:
+        - name: env-file
+          secret:
+            secretName: {{ include "course-service.envSecretName" . }}
+            {{- /* Имя ключа в секрете, который превратится в файл при монтировании. */}}
+            items:
+              - key: .env
+                path: .env
+        - name: logs
+          emptyDir: {}
+
+      {{- with .Values.nodeSelector }}
+      nodeSelector:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.tolerations }}
+      tolerations:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.affinity }}
+      affinity:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}

@@ -1,0 +1,75 @@
+# =============================================================================
+# Пример override-файла для production-стенда.
+# Скопируй в values-prod.yaml (он в .gitignore через .helmignore не попадёт
+# в чарт), заполни своими данными и используй так:
+#
+#   helm upgrade --install course-service ./helm/course-service \
+#       -n course --create-namespace \
+#       -f helm/course-service/values-prod.yaml
+#
+# !!! ВАЖНО: реальный values-prod.yaml с паролями НЕ КОММИТИТЬ В GIT !!!
+# Лучшие практики:
+#   1) хранить его в защищённом хранилище (Vault, 1Password, sops);
+#   2) или использовать secrets.existingSecret и держать k8s Secret отдельно.
+# =============================================================================
+
+image:
+  repository: registry.example.com/myteam/course-service
+  tag: "1.0.3"
+  pullPolicy: IfNotPresent
+
+# Если реестр приватный, заранее создай docker-registry секрет:
+#   kubectl create secret docker-registry regcred \
+#       --docker-server=registry.example.com \
+#       --docker-username=... --docker-password=... \
+#       -n course
+imagePullSecrets:
+  - name: regcred
+
+replicaCount: 2
+
+config:
+  logLevel: info
+  httpServerAddr: ":10001"
+
+  postgres:
+    host: "postgres-internal.example.com"
+    port: "5432"
+    user: "course_service"
+    db: "courses"
+    sslmode: "require"
+
+  kafka:
+    brokers:
+      - "kafka-1.example.com:9092"
+      - "kafka-2.example.com:9092"
+      - "kafka-3.example.com:9092"
+
+secrets:
+  # Вариант А (простой, но пароль в файле — береги файл):
+  postgresPassword: "ЗАМЕНИ_МЕНЯ"
+
+  # Вариант Б (рекомендую для прода): создай Secret вручную / через Vault и подключи:
+  # existingSecret: course-service-env
+
+resources:
+  requests:
+    cpu: 100m
+    memory: 128Mi
+  limits:
+    cpu: 1000m
+    memory: 512Mi
+
+# Если в кластере есть ingress-controller (nginx, traefik):
+ingress:
+  enabled: true
+  className: nginx
+  hosts:
+    - host: course-service.example.com
+      paths:
+        - path: /
+          pathType: Prefix
+  tls:
+    - secretName: course-service-tls
+      hosts:
+        - course-service.example.com

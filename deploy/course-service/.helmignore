@@ -1,0 +1,21 @@
+# Файлы и каталоги, которые НЕ должны попасть в архив чарта (helm package).
+# Аналог .dockerignore / .gitignore — чтобы упакованный чарт был чистым.
+
+.DS_Store
+.git/
+.gitignore
+.idea/
+.vscode/
+*.swp
+*.swo
+*.bak
+*.tmp
+*~
+# Чарт-зависимости и тестовые артефакты Helm.
+charts/
+tmpcharts/
+# Локальные override-файлы со СЕКРЕТАМИ — их нельзя коммитить и тем более
+# упаковывать в чарт. Кладём в репо только values.yaml и values-*.example.yaml.
+values-*.local.yaml
+secrets.yaml
+*.tgz

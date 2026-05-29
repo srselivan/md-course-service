@@ -1,0 +1,88 @@
+image:
+  repository: srselivan/course-service
+  tag: "latest"
+  pullPolicy: Always
+
+replicaCount: 1
+
+strategy:
+  type: RollingUpdate
+  rollingUpdate:
+    maxSurge: 1
+    maxUnavailable: 0
+
+config:
+  # debug | info | warn | error
+  logLevel: info
+  # Папка, куда приложение пишет файл логов.
+  # /app/logs — это путь внутри контейнера (создаётся в Dockerfile).
+  # Туда монтируется emptyDir-том, см. deployment.yaml.
+  logFilePath: /app/logs
+  httpServerAddr: ":10001"
+
+  postgres:
+    host: "app-postgres-postgresql.postgres.svc.cluster.local"
+    port: "5432"
+    user: "postgres"
+    db: "courses"
+    # disable | require | verify-ca | verify-full
+    sslmode: "disable"
+    migrationsPath: "file://./migrations"
+
+  kafka:
+    brokers: []
+        # - "kafka:9094"
+
+secrets:
+  postgresPassword: "postgres"
+
+service:
+  type: ClusterIP
+  port: 10001
+
+resources:
+  requests:
+    cpu: 50m       # 50 миллиCPU = 0.05 ядра
+    memory: 64Mi
+  limits:
+    cpu: 500m      # 0.5 ядра
+    memory: 256Mi
+
+probes:
+  startup:
+    enabled: true
+    failureThreshold: 30
+    periodSeconds: 2
+
+  liveness:
+    enabled: true
+    initialDelaySeconds: 0
+    periodSeconds: 10
+    timeoutSeconds: 3
+    failureThreshold: 3
+
+  readiness:
+    enabled: true
+    initialDelaySeconds: 0
+    periodSeconds: 10
+    timeoutSeconds: 3
+    failureThreshold: 3
+
+podSecurityContext:
+  runAsNonRoot: true
+  runAsUser: 1000
+  runAsGroup: 1000
+  fsGroup: 1000
+
+containerSecurityContext:
+  runAsUser: 1000
+  runAsGroup: 1000
+  allowPrivilegeEscalation: false
+  readOnlyRootFilesystem: false
+  capabilities:
+    drop: ["ALL"]
+
+serviceAccount:
+  create: true
+  name: ""
+  annotations: {}
