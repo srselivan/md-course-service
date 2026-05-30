@@ -1,0 +1,29 @@
+{{/*
+Service — это абстракция, дающая стабильный сетевой адрес группе подов.
+Поды появляются и исчезают (рестарты, выкаты, скейл), их IP меняются.
+Service же имеет постоянное DNS-имя (<service>.<namespace>.svc.cluster.local)
+и сам распределяет трафик между актуальными подами.
+
+Связь Service ↔ Pod устанавливается через selector: набор label'ов.
+ВАЖНО: тут используем ровно те же selectorLabels, что в Deployment.
+*/}}
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ include "users-service.fullname" . }}
+  labels:
+    {{- include "users-service.labels" . | nindent 4 }}
+spec:
+  type: {{ .Values.service.type }}
+  ports:
+    - name: http
+      {{- /* port — порт самого Service внутри кластера. */}}
+      port: {{ .Values.service.port }}
+      {{- /* targetPort — ссылка на named port в Pod (см. ports.name=http в deployment). */}}
+      targetPort: {{ .Values.service.targetPort }}
+      protocol: TCP
+      {{- if and (eq .Values.service.type "NodePort") .Values.service.nodePort }}
+      nodePort: {{ .Values.service.nodePort }}
+      {{- end }}
+  selector:
+    {{- include "users-service.selectorLabels" . | nindent 4 }}

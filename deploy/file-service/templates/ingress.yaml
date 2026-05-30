@@ -2,9 +2,9 @@
 apiVersion: networking.k8s.io/v1
 kind: Ingress
 metadata:
-  name: {{ include "course-service.fullname" . }}
+  name: {{ include "file-service.fullname" . }}
   labels:
-    {{- include "course-service.labels" . | nindent 4 }}
+    {{- include "file-service.labels" . | nindent 4 }}
   {{- with .Values.ingress.annotations }}
   annotations:
     {{- toYaml . | nindent 4 }}
@@ -27,7 +27,7 @@ spec:
             pathType: {{ .pathType | default "Prefix" }}
             backend:
               service:
-                name: {{ include "course-service.fullname" $ }}
+                name: {{ include "file-service.fullname" $ }}
                 port:
                   number: {{ $.Values.service.port }}
           {{- end }}

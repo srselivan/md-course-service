@@ -1,33 +1,30 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: {{ include "course-service.fullname" . }}
+  name: {{ include "users-service.fullname" . }}
   labels:
-    {{- include "course-service.labels" . | nindent 4 }}
+    {{- include "users-service.labels" . | nindent 4 }}
 spec:
   replicas: {{ .Values.replicaCount }}
   strategy:
     {{- toYaml .Values.strategy | nindent 4 }}
   selector:
     matchLabels:
-      {{- include "course-service.selectorLabels" . | nindent 6 }}
+      {{- include "users-service.selectorLabels" . | nindent 6 }}
 
   template:
     metadata:
       labels:
-        {{- include "course-service.selectorLabels" . | nindent 8 }}
+        {{- include "users-service.selectorLabels" . | nindent 8 }}
       annotations:
         checksum/secret: {{ include (print $.Template.BasePath "/secret.yaml") . | sha256sum }}
     spec:
-      serviceAccountName: {{ include "course-service.serviceAccountName" . }}
+      serviceAccountName: {{ include "users-service.serviceAccountName" . }}
 
       {{- with .Values.imagePullSecrets }}
       imagePullSecrets:
         {{- toYaml . | nindent 8 }}
       {{- end }}
-
-      securityContext:
-        {{- toYaml .Values.podSecurityContext | nindent 8 }}
 
       {{- with .Values.hostAliases }}
       hostAliases:
@@ -38,9 +35,6 @@ spec:
         - name: {{ .Chart.Name }}
           image: "{{ .Values.image.repository }}:{{ .Values.image.tag | default .Chart.AppVersion }}"
           imagePullPolicy: {{ .Values.image.pullPolicy }}
-
-          securityContext:
-            {{- toYaml .Values.containerSecurityContext | nindent 12 }}
 
           ports:
             - name: http
@@ -53,10 +47,6 @@ spec:
           {{- end }}
 
           volumeMounts:
-            - name: env-file
-              mountPath: /app/.env
-              subPath: .env
-              readOnly: true
             - name: logs
               mountPath: {{ .Values.config.logFilePath }}
 
@@ -97,7 +87,7 @@ spec:
       volumes:
         - name: env-file
           secret:
-            secretName: {{ include "course-service.envSecretName" . }}
+            secretName: {{ include "users-service.envSecretName" . }}
             {{- /* Имя ключа в секрете, который превратится в файл при монтировании. */}}
             items:
               - key: .env

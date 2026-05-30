@@ -1,0 +1,104 @@
+image:
+  repository: srselivan/file-service
+  tag: "latest"
+  pullPolicy: Always
+
+replicaCount: 1
+
+strategy:
+  type: RollingUpdate
+  rollingUpdate:
+    maxSurge: 1
+    maxUnavailable: 0
+
+config:
+  logFilePath: /app/logs
+  httpServerAddr: ":8087"
+
+# Секреты. В проде укажи existingSecret и не храни значения здесь.
+secrets:
+  existingSecret: ""
+  data:
+    DB_USERNAME: "postgres"
+    DB_PASSWORD: "postgres"
+
+extraEnv:
+  - name: DB_URL
+    value: "jdbc:postgresql://postgresql.postgres.svc.cluster.local:5432/users"
+  - name: DB_USERNAME
+    value: "postgres"
+  - name: DB_PASSWORD
+    value: "postgres"
+  - name: KAFKA_BOOTSTRAP
+    value: "app-kafka-cluster-kafka-bootstrap.kafka.svc.cluster.local:9092"
+  - name: S3_ENDPOINT
+    value: "http://minio.minio.svc.cluster.local:9000"
+  - name: S3_PRESIGNED_ENDPOINT
+    value: "http://minio.minio.svc.cluster.local:9000"
+  - name: S3_REGION
+    value: "us-east-1"
+  - name: S3_ACCESS_KEY
+    value: "admin_access_key"
+  - name: S3_SECRET_KEY
+    value: "admin_secret_key"
+  - name: S3_PUBLIC_BUCKET
+    value: "public-content"
+  - name: S3_PRIVATE_BUCKET
+    value: "private-content"
+  - name: SPRING_SECURITY_OAUTH2_RESOURCESERVER_JWT_JWK_SET_URI
+    value: "http://users-service.app.svc.cluster.local:10002/.well-known/jwks.json"
+  - name: SERVER_PORT
+    value: "8087"
+  - name: JAVA_OPTS
+    value: "-XX:InitialRAMPercentage=10 -XX:MaxRAMPercentage=35 -XX:+UseG1GC -XX:MaxMetaspaceSize=256m"
+
+service:
+  type: ClusterIP
+  port: 10003
+  targetPort: 8087
+
+resources:
+  requests:
+    cpu: 50m       # 50 миллиCPU = 0.05 ядра
+    memory: 256Mi
+  limits:
+    cpu: 500m      # 0.5 ядра
+    memory: 512Mi
+
+probes:
+  startup:
+    enabled: false
+    failureThreshold: 30
+    periodSeconds: 2
+
+  liveness:
+    enabled: false
+    initialDelaySeconds: 0
+    periodSeconds: 10
+    timeoutSeconds: 3
+    failureThreshold: 3
+
+  readiness:
+    enabled: false
+    initialDelaySeconds: 0
+    periodSeconds: 10
+    timeoutSeconds: 3
+    failureThreshold: 3
+
+serviceAccount:
+  create: true
+  name: ""
+  annotations: {}
+
+ingress:
+  enabled: false
+  # className — имя IngressClass (например, "nginx", "traefik").
+  className: "nginx"
+  annotations: {}
+  # nginx.ingress.kubernetes.io/rewrite-target: /
+  hosts:
+    - host: file-service.local
+      paths:
+        - path: /
+          pathType: Prefix
+  tls: []

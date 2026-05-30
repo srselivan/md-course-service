@@ -21,7 +21,7 @@ config:
   httpServerAddr: ":10001"
 
   postgres:
-    host: "app-postgres-postgresql.postgres.svc.cluster.local"
+    host: "postgresql.postgres.svc.cluster.local"
     port: "5432"
     user: "postgres"
     db: "courses"
@@ -30,8 +30,8 @@ config:
     migrationsPath: "file://./migrations"
 
   kafka:
-    brokers: []
-        # - "kafka:9094"
+    brokers:
+        - app-kafka-cluster-kafka-bootstrap.kafka.svc.cluster.local:9092
 
 secrets:
   postgresPassword: "postgres"
@@ -86,3 +86,16 @@ serviceAccount:
   create: true
   name: ""
   annotations: {}
+
+ingress:
+  enabled: false
+  # className — имя IngressClass (например, "nginx", "traefik").
+  className: "nginx"
+  annotations: {}
+  # nginx.ingress.kubernetes.io/rewrite-target: /
+  hosts:
+    - host: course-service.local
+      paths:
+        - path: /
+          pathType: Prefix
+  tls: []

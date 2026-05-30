@@ -9,7 +9,7 @@ import (
 )
 
 func registerSwagger(app *fiber.App) {
-	app.Get("/swagger/*", adaptor.HTTPHandler(
+	app.Get("/cs/swagger/*", adaptor.HTTPHandler(
 		httpSwagger.Handler(
 			httpSwagger.URL("/swagger/doc.json"),
 		),
